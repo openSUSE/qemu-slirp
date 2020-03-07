@@ -975,7 +975,6 @@ int if_encap(Slirp *slirp, struct mbuf *ifm)
 
     default:
         g_assert_not_reached();
-        break;
     }
 
     memcpy(eh->h_dest, ethaddr, ETH_ALEN);
