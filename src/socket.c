@@ -821,7 +821,7 @@ void sofwdrain(struct socket *so)
 
 static bool sotranslate_out4(Slirp *s, struct socket *so, struct sockaddr_in *sin)
 {
-    if (so->so_faddr.s_addr == s->vnameserver_addr.s_addr) {
+    if (!s->disable_dns && so->so_faddr.s_addr == s->vnameserver_addr.s_addr) {
         return get_dns_addr(&sin->sin_addr) >= 0;
     }
 
@@ -839,7 +839,7 @@ static bool sotranslate_out4(Slirp *s, struct socket *so, struct sockaddr_in *si
 
 static bool sotranslate_out6(Slirp *s, struct socket *so, struct sockaddr_in6 *sin)
 {
-    if (in6_equal(&so->so_faddr6, &s->vnameserver_addr6)) {
+    if (!s->disable_dns && in6_equal(&so->so_faddr6, &s->vnameserver_addr6)) {
         uint32_t scope_id;
         if (get_dns6_addr(&sin->sin6_addr, &scope_id) >= 0) {
             sin->sin6_scope_id = scope_id;
