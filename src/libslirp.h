@@ -109,6 +109,9 @@ typedef struct SlirpConfig {
      */
     struct sockaddr_in *outbound_addr;
     struct sockaddr_in6 *outbound_addr6;
+    /*
+     * Fields introduced in SlirpConfig version 3 begin
+     */
     bool disable_dns;  /* slirp will not redirect/serve any DNS packet */
 } SlirpConfig;
 
