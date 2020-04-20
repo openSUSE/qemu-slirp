@@ -9,11 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+ - `SLIRP_VERSION_STRING` macro, with the git sha suffix when building from git
+ - `SlirpConfig.disable_dns`, to disable DNS redirection #16
+
 ### Changed
+
+ - `slirp_version_string()` now has the git sha suffix when building form git
+ - Limit DNS redirection to port 53 #16
 
 ### Deprecated
 
 ### Fixed
+
+ - Fix build regression with mingw & NetBSD
+ - Fix use-afte-free in `ip_reass()` (CVE-2020-1983)
 
 ## [4.2.0] - 2020-03-17
 
@@ -22,12 +31,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - New API function `slirp_add_unix`: add a forward rule to a Unix socket.
  - New API function `slirp_remove_guestfwd`: remove a forward rule previously
    added by `slirp_add_exec`, `slirp_add_unix` or `slirp_add_guestfwd`
- - New SlirpConfig.outbound_addr{,6} fields to bind output socket to a
+ - New `SlirpConfig.outbound_addr{,6}` fields to bind output socket to a
    specific address
 
 ### Changed
 
- - socket: do not fallback on host loopback if get_dns_addr() failed
+ - socket: do not fallback on host loopback if `get_dns_addr()` failed
    or the address is in slirp network
 
 ### Fixed
