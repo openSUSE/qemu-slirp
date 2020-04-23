@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.3.0] - 2020-04-22
 
 ### Added
 
@@ -16,8 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
  - `slirp_version_string()` now has the git sha suffix when building form git
  - Limit DNS redirection to port 53 #16
-
-### Deprecated
 
 ### Fixed
 
@@ -91,7 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Standalone project, removing any QEMU dependency.
  - License clarifications.
 
-[unreleased]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.2.0...master
+[4.3.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.2.0...v4.3.0
 [4.2.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.1.0...v4.2.0
 [4.1.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.0.0...v4.1.0
 [4.0.0]: https://gitlab.freedesktop.org/slirp/libslirp/commits/v4.0.0

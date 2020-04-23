@@ -37,7 +37,7 @@ conf.set_quoted('SLIRP_VERSION_STRING', version)
 #   fixed, change:
 #      REVISION += 1
 lt_current = 2
-lt_revision = 0
+lt_revision = 1
 lt_age = 2
 lt_version = '@0@.@1@.@2@'.format(lt_current - lt_age, lt_age, lt_revision)
 
