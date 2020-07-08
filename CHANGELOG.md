@@ -5,15 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Added
+## [4.3.1] - 2020-07-08
 
 ### Changed
 
-### Deprecated
+ - A silent truncation could occur in `slirp_fmt()`, which will now print a
+   critical message. See also #22.
 
 ### Fixed
+
+ - CVE-2020-10756 - Drop bogus IPv6 messages that could lead to data leakage.
+   See !44 and !42.
+ - Fix win32 builds by using the SLIRP_PACKED definition.
+ - Various coverity scan errors fixed. !41
+ - Fix new GCC warnings. !43
 
 ## [4.3.0] - 2020-04-22
 
@@ -99,7 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Standalone project, removing any QEMU dependency.
  - License clarifications.
 
-[unreleased]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.3.0...master
+[4.3.1]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.3.0...v4.3.1
 [4.3.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.2.0...v4.3.0
 [4.2.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.1.0...v4.2.0
 [4.1.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.0.0...v4.1.0
