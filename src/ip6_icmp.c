@@ -69,7 +69,7 @@ static void icmp6_send_echoreply(struct mbuf *m, Slirp *slirp, struct ip6 *ip,
     ip6_output(NULL, t, 0);
 }
 
-void icmp6_send_error(struct mbuf *m, uint8_t type, uint8_t code)
+void icmp6_forward_error(struct mbuf *m, uint8_t type, uint8_t code, struct in6_addr *src)
 {
     Slirp *slirp = m->slirp;
     struct mbuf *t;
@@ -88,7 +88,7 @@ void icmp6_send_error(struct mbuf *m, uint8_t type, uint8_t code)
 
     /* IPv6 packet */
     struct ip6 *rip = mtod(t, struct ip6 *);
-    rip->ip_src = (struct in6_addr)LINKLOCAL_ADDR;
+    rip->ip_src = *src;
     rip->ip_dst = ip->ip_src;
     inet_ntop(AF_INET6, &rip->ip_dst, addrstr, INET6_ADDRSTRLEN);
     DEBUG_ARG("target = %s", addrstr);
@@ -129,6 +129,12 @@ void icmp6_send_error(struct mbuf *m, uint8_t type, uint8_t code)
     ricmp->icmp6_cksum = ip6_cksum(t);
 
     ip6_output(NULL, t, 0);
+}
+
+void icmp6_send_error(struct mbuf *m, uint8_t type, uint8_t code)
+{
+    struct in6_addr src = LINKLOCAL_ADDR;
+    icmp6_forward_error(m, type, code, &src);
 }
 
 /*

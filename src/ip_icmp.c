@@ -256,8 +256,8 @@ end_error:
  */
 
 #define ICMP_MAXDATALEN (IP_MSS - 28)
-void icmp_send_error(struct mbuf *msrc, uint8_t type, uint8_t code, int minsize,
-                     const char *message)
+void icmp_forward_error(struct mbuf *msrc, uint8_t type, uint8_t code, int minsize,
+                        const char *message, struct in_addr *src)
 {
     unsigned hlen, shlen, s_ip_len;
     register struct ip *ip;
@@ -372,7 +372,7 @@ void icmp_send_error(struct mbuf *msrc, uint8_t type, uint8_t code, int minsize,
     ip->ip_ttl = MAXTTL;
     ip->ip_p = IPPROTO_ICMP;
     ip->ip_dst = ip->ip_src; /* ip addresses */
-    ip->ip_src = m->slirp->vhost_addr;
+    ip->ip_src = *src;
 
     (void)ip_output((struct socket *)NULL, m);
 
@@ -380,6 +380,12 @@ end_error:
     return;
 }
 #undef ICMP_MAXDATALEN
+
+void icmp_send_error(struct mbuf *msrc, uint8_t type, uint8_t code, int minsize,
+                     const char *message)
+{
+    icmp_forward_error(msrc, type, code, minsize, message, &msrc->slirp->vhost_addr);
+}
 
 /*
  * Reflect the ip packet back to the source
