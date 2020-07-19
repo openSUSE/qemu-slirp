@@ -17,6 +17,7 @@ void udp6_input(struct mbuf *m)
     int len;
     struct socket *so;
     struct sockaddr_in6 lhost;
+    int hop_limit;
 
     DEBUG_CALL("udp6_input");
     DEBUG_ARG("m = %p", m);
@@ -109,6 +110,20 @@ void udp6_input(struct mbuf *m)
     iphlen += sizeof(struct udphdr);
     m->m_len -= iphlen;
     m->m_data += iphlen;
+
+    /*
+     * Check for TTL
+     */
+    hop_limit = save_ip.ip_hl-1;
+    if (hop_limit <= 0) {
+        m->m_len += iphlen;
+        m->m_data -= iphlen;
+        *ip = save_ip;
+        DEBUG_MISC("udp ttl exceeded");
+        icmp6_send_error(m, ICMP6_TIMXCEED, ICMP6_TIMXCEED_INTRANS);
+        goto bad;
+    }
+    setsockopt(so->s, IPPROTO_IPV6, IPV6_UNICAST_HOPS, &hop_limit, sizeof(hop_limit));
 
     /*
      * Now we sendto() the packet.

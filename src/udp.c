@@ -74,6 +74,7 @@ void udp_input(register struct mbuf *m, int iphlen)
     struct socket *so;
     struct sockaddr_storage lhost;
     struct sockaddr_in *lhost4;
+    int ttl;
 
     DEBUG_CALL("udp_input");
     DEBUG_ARG("m = %p", m);
@@ -201,6 +202,20 @@ void udp_input(register struct mbuf *m, int iphlen)
     iphlen += sizeof(struct udphdr);
     m->m_len -= iphlen;
     m->m_data += iphlen;
+
+    /*
+     * Check for TTL
+     */
+    ttl = save_ip.ip_ttl-1;
+    if (ttl <= 0) {
+        m->m_len += iphlen;
+        m->m_data -= iphlen;
+        *ip = save_ip;
+        DEBUG_MISC("udp ttl exceeded");
+        icmp_send_error(m, ICMP_TIMXCEED, ICMP_TIMXCEED_INTRANS, 0, NULL);
+        goto bad;
+    }
+    setsockopt(so->s, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl));
 
     /*
      * Now we sendto() the packet.
