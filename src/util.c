@@ -365,6 +365,7 @@ void slirp_pstrcpy(char *buf, int buf_size, const char *str)
     *q = '\0';
 }
 
+G_GNUC_PRINTF(3, 0)
 static int slirp_vsnprintf(char *str, size_t size,
                            const char *format, va_list args)
 {
