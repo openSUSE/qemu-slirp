@@ -336,8 +336,8 @@ int sosendoob(struct socket *so)
     DEBUG_ARG("so = %p", so);
     DEBUG_ARG("sb->sb_cc = %d", sb->sb_cc);
 
-    if (so->so_urgc > 2048)
-        so->so_urgc = 2048; /* XXXX */
+    if (so->so_urgc > sizeof(buff))
+        so->so_urgc = sizeof(buff); /* XXXX */
 
     if (sb->sb_rptr < sb->sb_wptr) {
         /* We can send it directly */
@@ -349,7 +349,7 @@ int sosendoob(struct socket *so)
          * we must copy all data to a linear buffer then
          * send it all
          */
-        uint32_t urgc = so->so_urgc;
+        uint32_t urgc = so->so_urgc; /* Amount of room left in buff */
         int len = (sb->sb_data + sb->sb_datalen) - sb->sb_rptr;
         if (len > urgc) {
             len = urgc;
@@ -357,6 +357,7 @@ int sosendoob(struct socket *so)
         memcpy(buff, sb->sb_rptr, len);
         urgc -= len;
         if (urgc) {
+            /* We still have some room for the rest */
             n = sb->sb_wptr - sb->sb_data;
             if (n > urgc) {
                 n = urgc;
