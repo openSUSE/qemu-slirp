@@ -1,11 +1,9 @@
 project('libslirp', 'c',
-  version : run_command('build-aux/git-version-gen', '@0@/.tarball-version'.format(meson.source_root()), check : true).stdout().strip(),
+  version : '4.3.1',
   license : 'BSD-3-Clause',
   default_options : ['warning_level=1', 'c_std=gnu99'],
   meson_version : '>= 0.49',
 )
-
-meson.add_dist_script('build-aux/meson-dist', meson.project_version(), meson.source_root())
 
 version = meson.project_version()
 varr = version.split('.')
@@ -17,7 +15,17 @@ conf = configuration_data()
 conf.set('SLIRP_MAJOR_VERSION', major_version)
 conf.set('SLIRP_MINOR_VERSION', minor_version)
 conf.set('SLIRP_MICRO_VERSION', micro_version)
-conf.set_quoted('SLIRP_VERSION_STRING', version)
+
+full_version = run_command('build-aux/git-version-gen',
+                           '@0@/.tarball-version'.format(meson.source_root()),
+                           check : true).stdout().strip()
+if full_version.startswith('UNKNOWN')
+  full_version = meson.project_version()
+elif not full_version.startswith(meson.project_version())
+  error('meson.build project version @0@ does not match git-describe output @1@'
+        .format(meson.project_version(), full_version))
+endif
+conf.set_quoted('SLIRP_VERSION_STRING', full_version)
 
 # libtool versioning - this applies to libslirp
 #
