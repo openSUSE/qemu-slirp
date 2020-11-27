@@ -8,6 +8,9 @@
 #ifdef __sun__
 #include <sys/filio.h>
 #endif
+#ifdef __linux__
+#include <linux/errqueue.h>
+#endif
 
 static void sofcantrcvmore(struct socket *so);
 static void sofcantsendmore(struct socket *so);
@@ -494,12 +497,67 @@ void sorecvfrom(struct socket *so)
     struct sockaddr_storage addr;
     struct sockaddr_storage saddr, daddr;
     socklen_t addrlen = sizeof(struct sockaddr_storage);
+    char buff[256];
+
+#ifdef __linux__
+    ssize_t size;
+    struct msghdr msg;
+    struct iovec iov;
+    char control[1024];
+
+    /* First look for errors */
+    memset(&msg, 0, sizeof(msg));
+    msg.msg_name = &saddr;
+    msg.msg_namelen = sizeof(saddr);
+    msg.msg_control = control;
+    msg.msg_controllen = sizeof(control);
+    iov.iov_base = buff;
+    iov.iov_len = sizeof(buff);
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+
+    size = recvmsg(so->s, &msg, MSG_ERRQUEUE);
+    if (size >= 0) {
+        struct cmsghdr *cmsg;
+        for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+
+            if (cmsg->cmsg_level == IPPROTO_IP &&
+                cmsg->cmsg_type == IP_RECVERR) {
+                struct sock_extended_err *ee =
+                    (struct sock_extended_err *) CMSG_DATA(cmsg);
+
+                if (ee->ee_origin == SO_EE_ORIGIN_ICMP) {
+                    /* Got an ICMP error, forward it */
+                    struct sockaddr_in *sin;
+
+                    sin = (struct sockaddr_in *) SO_EE_OFFENDER(ee);
+                    icmp_forward_error(so->so_m, ee->ee_type, ee->ee_code,
+                                       0, NULL, &sin->sin_addr);
+                }
+            }
+            else if (cmsg->cmsg_level == IPPROTO_IPV6 &&
+                     cmsg->cmsg_type == IPV6_RECVERR) {
+                struct sock_extended_err *ee =
+                    (struct sock_extended_err *) CMSG_DATA(cmsg);
+
+                if (ee->ee_origin == SO_EE_ORIGIN_ICMP6) {
+                    /* Got an ICMPv6 error, forward it */
+                    struct sockaddr_in6 *sin6;
+
+                    sin6 = (struct sockaddr_in6 *) SO_EE_OFFENDER(ee);
+                    icmp6_forward_error(so->so_m, ee->ee_type, ee->ee_code,
+                                        &sin6->sin6_addr);
+                }
+            }
+        }
+        return;
+    }
+#endif
 
     DEBUG_CALL("sorecvfrom");
     DEBUG_ARG("so = %p", so);
 
     if (so->so_type == IPPROTO_ICMP) { /* This is a "ping" reply */
-        char buff[256];
         int len;
 
         len = recvfrom(so->s, buff, 256, 0, (struct sockaddr *)&addr, &addrlen);
