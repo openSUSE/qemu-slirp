@@ -176,6 +176,8 @@ void icmp_input(struct mbuf *m, int hlen)
         } else {
             struct socket *so;
             struct sockaddr_storage addr;
+            int ttl;
+
             so = socreate(slirp);
             if (icmp_send(so, m, hlen) == 0) {
                 return;
@@ -206,6 +208,19 @@ void icmp_input(struct mbuf *m, int hlen)
                 udp_detach(so);
                 return;
             }
+
+            /*
+             * Check for TTL
+             */
+            ttl = ip->ip_ttl-1;
+            if (ttl <= 0) {
+                DEBUG_MISC("udp ttl exceeded");
+                icmp_send_error(m, ICMP_TIMXCEED, ICMP_TIMXCEED_INTRANS, 0,
+                                NULL);
+                udp_detach(so);
+                break;
+            }
+            setsockopt(so->s, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl));
 
             if (sendto(so->s, icmp_ping_msg, strlen(icmp_ping_msg), 0,
                        (struct sockaddr *)&addr, sockaddr_size(&addr)) == -1) {
