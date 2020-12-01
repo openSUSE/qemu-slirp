@@ -592,9 +592,6 @@ void sorecvfrom(struct socket *so)
             DEBUG_MISC(" ioctlsocket errno = %d-%s\n", errno, strerror(errno));
             return;
         }
-        if (n == 0) {
-            return;
-        }
 
         m = m_get(so->slirp);
         if (!m) {
