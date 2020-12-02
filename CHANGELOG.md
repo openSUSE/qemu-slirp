@@ -5,15 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.4.0] - 2020-12-02
 
 ### Added
 
+ - udp, udp6, icmp: handle TTL value. !48
+ - Enable forwarding ICMP errors. !49
+ - Add DNS resolving for iOS. !54
+
 ### Changed
 
-### Deprecated
+ - Improve meson subproject() support. !53
+ - Removed Makefile-based build system. !56
 
 ### Fixed
+
+ - socket: consume empty packets. !55
+ - check pkt_len before reading protocol header (CVE-2020-29129). !57
+ - ip_stripoptions use memmove (fixes undefined behaviour). !47
+ - various Coverity-related changes/fixes.
 
 ## [4.3.1] - 2020-07-08
 
@@ -114,7 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Standalone project, removing any QEMU dependency.
  - License clarifications.
 
-[unreleased]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.3.1...master
+[4.4.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.3.1...v4.4.0
 [4.3.1]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.3.0...v4.3.1
 [4.3.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.2.0...v4.3.0
 [4.2.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.1.0...v4.2.0
