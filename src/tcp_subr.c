@@ -303,7 +303,7 @@ struct tcpcb *tcp_drop(struct tcpcb *tp, int err)
 
     if (TCPS_HAVERCVDSYN(tp->t_state)) {
         tp->t_state = TCPS_CLOSED;
-        (void)tcp_output(tp);
+        tcp_output(tp);
     }
     return (tcp_close(tp));
 }
