@@ -360,7 +360,7 @@ insert:
     ip->ip_src = fp->ipq_src;
     ip->ip_dst = fp->ipq_dst;
     remque(&fp->ip_link);
-    (void)m_free(dtom(slirp, fp));
+    m_free(dtom(slirp, fp));
     m->m_len += (ip->ip_hl << 2);
     m->m_data -= (ip->ip_hl << 2);
 
@@ -386,7 +386,7 @@ static void ip_freef(Slirp *slirp, struct ipq *fp)
         m_free(dtom(slirp, q));
     }
     remque(&fp->ip_link);
-    (void)m_free(dtom(slirp, fp));
+    m_free(dtom(slirp, fp));
 }
 
 /*

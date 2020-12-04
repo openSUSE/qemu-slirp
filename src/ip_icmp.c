@@ -389,7 +389,7 @@ void icmp_forward_error(struct mbuf *msrc, uint8_t type, uint8_t code, int minsi
     ip->ip_dst = ip->ip_src; /* ip addresses */
     ip->ip_src = *src;
 
-    (void)ip_output((struct socket *)NULL, m);
+    ip_output((struct socket *)NULL, m);
 
 end_error:
     return;
@@ -449,7 +449,7 @@ void icmp_reflect(struct mbuf *m)
         ip->ip_src = icmp_dst;
     }
 
-    (void)ip_output((struct socket *)NULL, m);
+    ip_output((struct socket *)NULL, m);
 }
 
 void icmp_receive(struct socket *so)
