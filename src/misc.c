@@ -136,6 +136,14 @@ static void fork_exec_child_setup(gpointer data)
 {
 #ifndef _WIN32
     setsid();
+
+    /* Unblock all signals and leave our exec()-ee to block what it wants */
+    sigset_t ss;
+    sigemptyset(&ss);
+    sigprocmask(SIG_SETMASK, &ss, NULL);
+
+    /* POSIX is obnoxious about SIGCHLD specifically across exec() */
+    signal(SIGCHLD, SIG_DFL);
 #endif
 }
 
