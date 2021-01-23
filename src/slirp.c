@@ -128,7 +128,6 @@ static void winsock_cleanup(void)
 static int get_dns_addr_cached(void *pdns_addr, void *cached_addr,
                                socklen_t addrlen, unsigned *cached_time)
 {
-    struct stat old_stat;
     if (curtime - *cached_time < TIMEOUT_DEFAULT) {
         memcpy(pdns_addr, cached_addr, addrlen);
         return 0;
@@ -140,7 +139,6 @@ static int get_dns_addr_libresolv(int af, void *pdns_addr, void *cached_addr,
                                   socklen_t addrlen, uint32_t *scope_id,
                                   unsigned *cached_time)
 {
-    char buff[512];
     struct __res_state state;
     union res_sockaddr_union servers[NI_MAXSERV];
     int count;
