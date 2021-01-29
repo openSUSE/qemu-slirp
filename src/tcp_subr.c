@@ -421,7 +421,7 @@ int tcp_fconnect(struct socket *so, unsigned short af)
         struct sockaddr_storage addr;
 
         slirp_set_nonblock(s);
-        so->slirp->cb->register_poll_fd(so->s, so->slirp->opaque);
+        so->slirp->cb->register_poll_fd(s, so->slirp->opaque);
         slirp_socket_set_fast_reuse(s);
         opt = 1;
         setsockopt(s, SOL_SOCKET, SO_OOBINLINE, &opt, sizeof(opt));
