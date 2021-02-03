@@ -736,20 +736,26 @@ int sosendto(struct socket *so, struct mbuf *m)
 /*
  * Listen for incoming TCP connections
  */
-struct socket *tcp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
-                          uint32_t laddr, unsigned lport, int flags)
+static struct socket *tcpx_listen(Slirp *slirp, int family,
+                                  in4or6_addr haddr, unsigned hport,
+                                  in4or6_addr laddr, unsigned lport,
+                                  int flags)
 {
-    /* TODO: IPv6 */
-    struct sockaddr_in addr;
+    union slirp_sockaddr addr;
     struct socket *so;
     int s, opt = 1;
     socklen_t addrlen = sizeof(addr);
-    memset(&addr, 0, addrlen);
 
-    DEBUG_CALL("tcp_listen");
-    DEBUG_ARG("haddr = %s", inet_ntoa((struct in_addr){ .s_addr = haddr }));
+    DEBUG_CALL("tcpx_listen");
+    /* AF_INET6 addresses are bigger than AF_INET, so this is big enough. */
+    char addrstr[INET6_ADDRSTRLEN];
+    const char *str = inet_ntop(family, &haddr, addrstr, sizeof(addrstr));
+    g_assert(str != NULL);
+    DEBUG_ARG("haddr = %s", str);
     DEBUG_ARG("hport = %d", ntohs(hport));
-    DEBUG_ARG("laddr = %s", inet_ntoa((struct in_addr){ .s_addr = laddr }));
+    str = inet_ntop(family, &laddr, addrstr, sizeof(addrstr));
+    g_assert(str != NULL);
+    DEBUG_ARG("laddr = %s", str);
     DEBUG_ARG("lport = %d", ntohs(lport));
     DEBUG_ARG("flags = %x", flags);
 
@@ -770,20 +776,35 @@ struct socket *tcp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
 
     so->so_state &= SS_PERSISTENT_MASK;
     so->so_state |= (SS_FACCEPTCONN | flags);
-    so->so_lfamily = AF_INET;
-    so->so_lport = lport; /* Kept in network format */
-    so->so_laddr.s_addr = laddr; /* Ditto */
+    so->so_lfamily = family;
+    /* Address,port are kept in network format */
+    if (family == AF_INET) {
+        so->so_laddr = laddr.addr4;
+        so->so_lport = lport;
+    } else {
+        so->so_laddr6 = laddr.addr6;
+        so->so_lport6 = lport;
+    }
 
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = haddr;
-    addr.sin_port = hport;
+    memset(&addr, 0, addrlen);
+    if (family == AF_INET) {
+        addr.sin.sin_family = family;
+        addr.sin.sin_addr = haddr.addr4;
+        addr.sin.sin_port = hport;
+        addrlen = sizeof(addr.sin);
+    } else {
+        addr.sin6.sin6_family = family;
+        addr.sin6.sin6_addr = haddr.addr6;
+        addr.sin6.sin6_port = hport;
+        addrlen = sizeof(addr.sin6);
+    }
 
-    if (((s = slirp_socket(AF_INET, SOCK_STREAM, 0)) < 0) ||
+    s = slirp_socket(family, SOCK_STREAM, 0);
+    if ((s < 0) ||
         (slirp_socket_set_fast_reuse(s) < 0) ||
-        (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) ||
+        (bind(s, (struct sockaddr *)&addr, addrlen) < 0) ||
         (listen(s, 1) < 0)) {
         int tmperrno = errno; /* Don't clobber the real reason we failed */
-
         if (s >= 0) {
             closesocket(s);
         }
@@ -797,20 +818,39 @@ struct socket *tcp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
         return NULL;
     }
     setsockopt(s, SOL_SOCKET, SO_OOBINLINE, &opt, sizeof(int));
-    opt = 1;
-    setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
+    slirp_socket_set_nodelay(s);
 
     getsockname(s, (struct sockaddr *)&addr, &addrlen);
-    so->so_ffamily = AF_INET;
-    so->so_fport = addr.sin_port;
-    if (addr.sin_addr.s_addr == 0 ||
-        addr.sin_addr.s_addr == loopback_addr.s_addr)
-        so->so_faddr = slirp->vhost_addr;
-    else
-        so->so_faddr = addr.sin_addr;
+    if (family == AF_INET) {
+        so->fhost.sin = addr.sin;
+    } else {
+        so->fhost.sin6 = addr.sin6;
+    }
+    sotranslate_accept(so);
 
     so->s = s;
     return so;
+}
+
+struct socket *tcp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
+                          uint32_t laddr, unsigned lport, int flags)
+{
+    in4or6_addr haddr4, laddr4;
+
+    haddr4.addr4.s_addr = haddr;
+    laddr4.addr4.s_addr = laddr;
+    return tcpx_listen(slirp, AF_INET, haddr4, hport, laddr4, lport, flags);
+}
+
+struct socket *
+tcp6_listen(Slirp *slirp, struct in6_addr haddr, u_int hport,
+            struct in6_addr laddr, u_int lport, int flags)
+{
+    in4or6_addr haddr6, laddr6;
+
+    haddr6.addr6 = haddr;
+    laddr6.addr6 = laddr;
+    return tcpx_listen(slirp, AF_INET6, haddr6, hport, laddr6, lport, flags);
 }
 
 /*

@@ -11,6 +11,13 @@
 #define SO_EXPIRE 240000
 #define SO_EXPIREFAST 10000
 
+/* Helps unify some in/in6 routines. */
+union in4or6_addr {
+    struct in_addr addr4;
+    struct in6_addr addr6;
+};
+typedef union in4or6_addr in4or6_addr;
+
 /*
  * Our socket structure
  */
@@ -148,6 +155,8 @@ int sowrite(struct socket *);
 void sorecvfrom(struct socket *);
 int sosendto(struct socket *, struct mbuf *);
 struct socket *tcp_listen(Slirp *, uint32_t, unsigned, uint32_t, unsigned, int);
+struct socket *tcp6_listen(Slirp *, struct in6_addr, u_int,
+                           struct in6_addr, u_int, int);
 void soisfconnecting(register struct socket *);
 void soisfconnected(register struct socket *);
 void sofwdrain(struct socket *);
