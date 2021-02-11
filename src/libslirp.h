@@ -138,7 +138,7 @@ Slirp *slirp_init(int restricted, bool in_enabled, struct in_addr vnetwork,
 void slirp_cleanup(Slirp *slirp);
 
 /* This is called by the application when it is about to sleep through poll().
- * *timeout is set to the amount of virtual time that the application intends to
+ * *timeout is set to the amount of virtual time (in ms) that the application intends to
  * wait (UINT32_MAX if infinite). slirp_pollfds_fill updates it according to
  * e.g. TCP timers, so the application knows it should sleep a smaller amount of
  * time. slirp_pollfds_fill calls add_poll for each file descriptor
