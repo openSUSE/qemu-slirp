@@ -744,7 +744,7 @@ static struct socket *tcpx_listen(Slirp *slirp, int family,
     union slirp_sockaddr addr;
     struct socket *so;
     int s, opt = 1;
-    socklen_t addrlen = sizeof(addr);
+    socklen_t addrlen;
 
     DEBUG_CALL("tcpx_listen");
     /* AF_INET6 addresses are bigger than AF_INET, so this is big enough. */
@@ -786,7 +786,7 @@ static struct socket *tcpx_listen(Slirp *slirp, int family,
         so->so_lport6 = lport;
     }
 
-    memset(&addr, 0, addrlen);
+    memset(&addr, 0, sizeof(addr));
     if (family == AF_INET) {
         addr.sin.sin_family = family;
         addr.sin.sin_addr = haddr.addr4;
