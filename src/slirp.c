@@ -1165,6 +1165,14 @@ int slirp_add_ipv6_hostfwd(Slirp *slirp, int is_udp,
                           struct in6_addr host_addr, int host_port,
                           struct in6_addr guest_addr, int guest_port)
 {
+    /*
+     * Libslirp currently only provides a stateless DHCPv6 server, thus we
+     * can't translate "addr-any" to the guest. Instead, for now, reject it.
+     */
+    if (in6_zero(&guest_addr)) {
+        return -1;
+    }
+
     if (is_udp) {
         if (!udp6_listen(slirp, host_addr, htons(host_port),
                          guest_addr, htons(guest_port), SS_HOSTFWD))
