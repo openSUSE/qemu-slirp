@@ -29,12 +29,12 @@ void m_init(Slirp *slirp)
     slirp->m_usedlist.qh_link = slirp->m_usedlist.qh_rlink = &slirp->m_usedlist;
 }
 
-void m_cleanup(Slirp *slirp)
+void m_cleanup_list(struct quehead *list_head)
 {
     struct mbuf *m, *next;
 
-    m = (struct mbuf *)slirp->m_usedlist.qh_link;
-    while ((struct quehead *)m != &slirp->m_usedlist) {
+    m = (struct mbuf *)list_head->qh_link;
+    while ((struct quehead *)m != list_head) {
         next = m->m_next;
         if (m->m_flags & M_EXT) {
             g_free(m->m_ext);
@@ -42,12 +42,12 @@ void m_cleanup(Slirp *slirp)
         g_free(m);
         m = next;
     }
-    m = (struct mbuf *)slirp->m_freelist.qh_link;
-    while ((struct quehead *)m != &slirp->m_freelist) {
-        next = m->m_next;
-        g_free(m);
-        m = next;
-    }
+}
+
+void m_cleanup(Slirp *slirp)
+{
+    m_cleanup_list(&slirp->m_usedlist);
+    m_cleanup_list(&slirp->m_freelist);
 }
 
 /*
