@@ -48,6 +48,8 @@ void m_cleanup(Slirp *slirp)
 {
     m_cleanup_list(&slirp->m_usedlist);
     m_cleanup_list(&slirp->m_freelist);
+    m_cleanup_list(&slirp->if_batchq);
+    m_cleanup_list(&slirp->if_fastq);
 }
 
 /*
