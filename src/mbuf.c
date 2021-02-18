@@ -42,6 +42,8 @@ void m_cleanup_list(struct quehead *list_head)
         g_free(m);
         m = next;
     }
+    list_head->qh_link = list_head;
+    list_head->qh_rlink = list_head;
 }
 
 void m_cleanup(Slirp *slirp)
