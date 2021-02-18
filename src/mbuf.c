@@ -105,6 +105,7 @@ void m_free(struct mbuf *m)
         /* If it's M_EXT, free() it */
         if (m->m_flags & M_EXT) {
             g_free(m->m_ext);
+            m->m_flags &= ~M_EXT;
         }
         /*
          * Either free() it or put it on the free list
