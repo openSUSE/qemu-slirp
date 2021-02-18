@@ -30,7 +30,10 @@ int ip6_output(struct socket *so, struct mbuf *m, int fast)
     ip->ip_fl_lo = 0;
 
     if (fast) {
+        /* We cannot fast-send non-multicast, we'd need a NDP NS */
+        assert(IN6_IS_ADDR_MULTICAST(&ip->ip_dst));
         if_encap(m->slirp, m);
+        m_free(m);
     } else {
         if_output(so, m);
     }
