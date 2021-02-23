@@ -84,6 +84,7 @@ struct iovec {
 #define SCALE_MS 1000000
 
 #define ETH_ALEN 6
+#define ETH_ADDRSTRLEN 18 /* "xx:xx:xx:xx:xx:xx", with trailing NUL */
 #define ETH_HLEN 14
 #define ETH_P_IP (0x0800) /* Internet Protocol packet  */
 #define ETH_P_ARP (0x0806) /* Address Resolution packet */
@@ -185,5 +186,12 @@ void slirp_pstrcpy(char *buf, int buf_size, const char *str);
 
 int slirp_fmt(char *str, size_t size, const char *format, ...) G_GNUC_PRINTF(3, 4);
 int slirp_fmt0(char *str, size_t size, const char *format, ...) G_GNUC_PRINTF(3, 4);
+
+/*
+ * Pretty print a MAC address into out_str.
+ * As a convenience returns out_str.
+ */
+const char *slirp_ether_ntoa(const uint8_t *addr, char *out_str,
+                             size_t out_str_len);
 
 #endif

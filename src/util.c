@@ -427,3 +427,14 @@ int slirp_fmt0(char *str, size_t size, const char *format, ...)
 
     return rv;
 }
+
+const char *slirp_ether_ntoa(const uint8_t *addr, char *out_str,
+                             size_t out_str_size)
+{
+    assert(out_str_size >= ETH_ADDRSTRLEN);
+
+    slirp_fmt0(out_str, out_str_size, "%02x:%02x:%02x:%02x:%02x:%02x",
+               addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+
+    return out_str;
+}

@@ -1060,6 +1060,7 @@ int if_encap(Slirp *slirp, struct mbuf *ifm)
     uint8_t ethaddr[ETH_ALEN];
     const struct ip *iph = (const struct ip *)ifm->m_data;
     int ret;
+    char ethaddr_str[ETH_ADDRSTRLEN];
 
     if (ifm->m_len + ETH_HLEN > sizeof(buf)) {
         return 1;
@@ -1085,12 +1086,10 @@ int if_encap(Slirp *slirp, struct mbuf *ifm)
     }
 
     memcpy(eh->h_dest, ethaddr, ETH_ALEN);
-    DEBUG_ARG("src = %02x:%02x:%02x:%02x:%02x:%02x", eh->h_source[0],
-              eh->h_source[1], eh->h_source[2], eh->h_source[3],
-              eh->h_source[4], eh->h_source[5]);
-    DEBUG_ARG("dst = %02x:%02x:%02x:%02x:%02x:%02x", eh->h_dest[0],
-              eh->h_dest[1], eh->h_dest[2], eh->h_dest[3], eh->h_dest[4],
-              eh->h_dest[5]);
+    DEBUG_ARG("src = %s", slirp_ether_ntoa(eh->h_source, ethaddr_str,
+                                           sizeof(ethaddr_str)));
+    DEBUG_ARG("dst = %s", slirp_ether_ntoa(eh->h_dest, ethaddr_str,
+                                           sizeof(ethaddr_str)));
     memcpy(buf + sizeof(struct ethhdr), ifm->m_data, ifm->m_len);
     slirp_send_packet_all(slirp, buf, ifm->m_len + ETH_HLEN);
     return 1;
