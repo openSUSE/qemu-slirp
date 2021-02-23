@@ -85,9 +85,9 @@ struct slirp_arphdr {
     /*
      *  Ethernet looks like this : This bit is variable sized however...
      */
-    unsigned char ar_sha[ETH_ALEN]; /* sender hardware address */
+    uint8_t ar_sha[ETH_ALEN]; /* sender hardware address */
     uint32_t ar_sip; /* sender IP address       */
-    unsigned char ar_tha[ETH_ALEN]; /* target hardware address */
+    uint8_t ar_tha[ETH_ALEN]; /* target hardware address */
     uint32_t ar_tip; /* target IP address       */
 } SLIRP_PACKED;
 
@@ -105,7 +105,7 @@ bool arp_table_search(Slirp *slirp, uint32_t ip_addr,
                       uint8_t out_ethaddr[ETH_ALEN]);
 
 struct ndpentry {
-    unsigned char eth_addr[ETH_ALEN]; /* sender hardware address */
+    uint8_t eth_addr[ETH_ALEN]; /* sender hardware address */
     struct in6_addr ip_addr; /* sender IP address       */
 };
 
