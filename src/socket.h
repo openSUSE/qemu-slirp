@@ -7,6 +7,7 @@
 #define SLIRP_SOCKET_H
 
 #include "misc.h"
+#include "sbuf.h"
 
 #define SO_EXPIRE 240000
 #define SO_EXPIREFAST 10000
