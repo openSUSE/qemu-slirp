@@ -832,6 +832,8 @@ static struct socket *tcpx_listen(Slirp *slirp, int family,
     return so;
 }
 
+/* TODO: rather fuse tcp_listen and tcp6_listen into tcp_listen that takes two
+ * sockaddr */
 struct socket *tcp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
                           uint32_t laddr, unsigned lport, int flags)
 {

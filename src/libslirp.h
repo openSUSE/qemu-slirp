@@ -166,6 +166,7 @@ int slirp_add_hostfwd(Slirp *slirp, int is_udp, struct in_addr host_addr,
                       int host_port, struct in_addr guest_addr, int guest_port);
 int slirp_remove_hostfwd(Slirp *slirp, int is_udp, struct in_addr host_addr,
                          int host_port);
+/* TODO: rather introduce a function that takes two sockaddr */
 int slirp_add_ipv6_hostfwd(Slirp *slirp, int is_udp,
                            struct in6_addr host_addr, int host_port,
                            struct in6_addr guest_addr, int guest_port);

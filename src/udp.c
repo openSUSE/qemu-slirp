@@ -415,6 +415,8 @@ static struct socket *udpx_listen(Slirp *slirp, int family,
     return so;
 }
 
+/* TODO: rather fuse udp_listen and udp6_listen into udp_listen that takes two
+ * sockaddr */
 struct socket *udp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
                           uint32_t laddr, unsigned lport, int flags)
 {
