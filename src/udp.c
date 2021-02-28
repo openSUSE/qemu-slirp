@@ -353,17 +353,16 @@ static uint8_t udp_tos(struct socket *so)
     return 0;
 }
 
-static struct socket *udpx_listen(Slirp *slirp, int family,
-                                  in4or6_addr haddr, unsigned hport,
-                                  in4or6_addr laddr, unsigned lport,
-                                  int flags)
+struct socket *udpx_listen(Slirp *slirp,
+                           union slirp_sockaddr *haddr, socklen_t haddrlen,
+                           union slirp_sockaddr *laddr, socklen_t laddrlen,
+                           int flags)
 {
-    union slirp_sockaddr addr;
     struct socket *so;
     socklen_t addrlen;
 
     so = socreate(slirp);
-    so->s = slirp_socket(family, SOCK_DGRAM, 0);
+    so->s = slirp_socket(haddr->ss.ss_family, SOCK_DGRAM, 0);
     if (so->s < 0) {
         sofree(so);
         return NULL;
@@ -371,41 +370,17 @@ static struct socket *udpx_listen(Slirp *slirp, int family,
     so->so_expire = curtime + SO_EXPIRE;
     insque(so, &slirp->udb);
 
-    memset(&addr, 0, sizeof(addr));
-    if (family == AF_INET) {
-        addr.sin.sin_family = family;
-        addr.sin.sin_addr = haddr.addr4;
-        addr.sin.sin_port = hport;
-        addrlen = sizeof(addr.sin);
-    } else {
-        addr.sin6.sin6_family = family;
-        addr.sin6.sin6_addr = haddr.addr6;
-        addr.sin6.sin6_port = hport;
-        addrlen = sizeof(addr.sin6);
-    }
-
-    if (bind(so->s, (struct sockaddr *)&addr, addrlen) < 0) {
+    if (bind(so->s, (struct sockaddr *)haddr, haddrlen) < 0) {
         udp_detach(so);
         return NULL;
     }
     slirp_socket_set_fast_reuse(so->s);
 
-    getsockname(so->s, (struct sockaddr *)&addr, &addrlen);
-    if (family == AF_INET) {
-        so->fhost.sin = addr.sin;
-    } else {
-        so->fhost.sin6 = addr.sin6;
-    }
+    addrlen = sizeof(so->fhost);
+    getsockname(so->s, (struct sockaddr *)&so->fhost, &addrlen);
     sotranslate_accept(so);
 
-    so->so_lfamily = family;
-    if (family == AF_INET) {
-        so->so_laddr = laddr.addr4;
-        so->so_lport = lport;
-    } else {
-        so->so_laddr6 = laddr.addr6;
-        so->so_lport6 = lport;
-    }
+    so->lhost = *laddr;
 
     if (flags != SS_FACCEPTONCE)
         so->so_expire = 0;
@@ -415,25 +390,39 @@ static struct socket *udpx_listen(Slirp *slirp, int family,
     return so;
 }
 
-/* TODO: rather fuse udp_listen and udp6_listen into udp_listen that takes two
- * sockaddr */
 struct socket *udp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
                           uint32_t laddr, unsigned lport, int flags)
 {
-    in4or6_addr haddr4, laddr4;
+    struct sockaddr_in hsa, lsa;
 
-    haddr4.addr4.s_addr = haddr;
-    laddr4.addr4.s_addr = laddr;
-    return udpx_listen(slirp, AF_INET, haddr4, hport, laddr4, lport, flags);
+    memset(&hsa, 0, sizeof(hsa));
+    hsa.sin_family = AF_INET;
+    hsa.sin_addr.s_addr = haddr;
+    hsa.sin_port = hport;
+
+    memset(&lsa, 0, sizeof(lsa));
+    lsa.sin_family = AF_INET;
+    lsa.sin_addr.s_addr = laddr;
+    lsa.sin_port = lport;
+
+    return udpx_listen(slirp, (union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
 }
 
 struct socket *
 udp6_listen(Slirp *slirp, struct in6_addr haddr, u_int hport,
             struct in6_addr laddr, u_int lport, int flags)
 {
-    in4or6_addr haddr6, laddr6;
+    struct sockaddr_in6 hsa, lsa;
 
-    haddr6.addr6 = haddr;
-    laddr6.addr6 = laddr;
-    return udpx_listen(slirp, AF_INET6, haddr6, hport, laddr6, lport, flags);
+    memset(&hsa, 0, sizeof(hsa));
+    hsa.sin6_family = AF_INET6;
+    hsa.sin6_addr = haddr;
+    hsa.sin6_port = hport;
+
+    memset(&lsa, 0, sizeof(lsa));
+    lsa.sin6_family = AF_INET6;
+    lsa.sin6_addr = laddr;
+    lsa.sin6_port = lport;
+
+    return udpx_listen(slirp, (union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
 }
