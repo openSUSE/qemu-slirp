@@ -736,12 +736,11 @@ int sosendto(struct socket *so, struct mbuf *m)
 /*
  * Listen for incoming TCP connections
  */
-static struct socket *tcpx_listen(Slirp *slirp, int family,
-                                  in4or6_addr haddr, unsigned hport,
-                                  in4or6_addr laddr, unsigned lport,
-                                  int flags)
+struct socket *tcpx_listen(Slirp *slirp,
+                           union slirp_sockaddr *haddr, socklen_t haddrlen,
+                           union slirp_sockaddr *laddr, socklen_t laddrlen,
+                           int flags)
 {
-    union slirp_sockaddr addr;
     struct socket *so;
     int s, opt = 1;
     socklen_t addrlen;
@@ -749,14 +748,16 @@ static struct socket *tcpx_listen(Slirp *slirp, int family,
     DEBUG_CALL("tcpx_listen");
     /* AF_INET6 addresses are bigger than AF_INET, so this is big enough. */
     char addrstr[INET6_ADDRSTRLEN];
-    const char *str = inet_ntop(family, &haddr, addrstr, sizeof(addrstr));
-    g_assert(str != NULL);
-    DEBUG_ARG("haddr = %s", str);
-    DEBUG_ARG("hport = %d", ntohs(hport));
-    str = inet_ntop(family, &laddr, addrstr, sizeof(addrstr));
-    g_assert(str != NULL);
-    DEBUG_ARG("laddr = %s", str);
-    DEBUG_ARG("lport = %d", ntohs(lport));
+    char portstr[6];
+    int ret;
+    ret = getnameinfo((struct sockaddr *) haddr, haddrlen, addrstr, sizeof(addrstr), portstr, sizeof(portstr), NI_NUMERICHOST|NI_NUMERICSERV);
+    g_assert(ret == 0);
+    DEBUG_ARG("haddr = %s", addrstr);
+    DEBUG_ARG("hport = %s", portstr);
+    ret = getnameinfo((struct sockaddr *) laddr, laddrlen, addrstr, sizeof(addrstr), portstr, sizeof(portstr), NI_NUMERICHOST|NI_NUMERICSERV);
+    g_assert(ret == 0);
+    DEBUG_ARG("laddr = %s", addrstr);
+    DEBUG_ARG("lport = %s", portstr);
     DEBUG_ARG("flags = %x", flags);
 
     so = socreate(slirp);
@@ -776,33 +777,12 @@ static struct socket *tcpx_listen(Slirp *slirp, int family,
 
     so->so_state &= SS_PERSISTENT_MASK;
     so->so_state |= (SS_FACCEPTCONN | flags);
-    so->so_lfamily = family;
-    /* Address,port are kept in network format */
-    if (family == AF_INET) {
-        so->so_laddr = laddr.addr4;
-        so->so_lport = lport;
-    } else {
-        so->so_laddr6 = laddr.addr6;
-        so->so_lport6 = lport;
-    }
+    so->lhost = *laddr;
 
-    memset(&addr, 0, sizeof(addr));
-    if (family == AF_INET) {
-        addr.sin.sin_family = family;
-        addr.sin.sin_addr = haddr.addr4;
-        addr.sin.sin_port = hport;
-        addrlen = sizeof(addr.sin);
-    } else {
-        addr.sin6.sin6_family = family;
-        addr.sin6.sin6_addr = haddr.addr6;
-        addr.sin6.sin6_port = hport;
-        addrlen = sizeof(addr.sin6);
-    }
-
-    s = slirp_socket(family, SOCK_STREAM, 0);
+    s = slirp_socket(haddr->ss.ss_family, SOCK_STREAM, 0);
     if ((s < 0) ||
         (slirp_socket_set_fast_reuse(s) < 0) ||
-        (bind(s, (struct sockaddr *)&addr, addrlen) < 0) ||
+        (bind(s, (struct sockaddr *)haddr, haddrlen) < 0) ||
         (listen(s, 1) < 0)) {
         int tmperrno = errno; /* Don't clobber the real reason we failed */
         if (s >= 0) {
@@ -820,39 +800,49 @@ static struct socket *tcpx_listen(Slirp *slirp, int family,
     setsockopt(s, SOL_SOCKET, SO_OOBINLINE, &opt, sizeof(int));
     slirp_socket_set_nodelay(s);
 
-    getsockname(s, (struct sockaddr *)&addr, &addrlen);
-    if (family == AF_INET) {
-        so->fhost.sin = addr.sin;
-    } else {
-        so->fhost.sin6 = addr.sin6;
-    }
+    addrlen = sizeof(so->fhost);
+    getsockname(s, (struct sockaddr *)&so->fhost, &addrlen);
     sotranslate_accept(so);
 
     so->s = s;
     return so;
 }
 
-/* TODO: rather fuse tcp_listen and tcp6_listen into tcp_listen that takes two
- * sockaddr */
 struct socket *tcp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
                           uint32_t laddr, unsigned lport, int flags)
 {
-    in4or6_addr haddr4, laddr4;
+    struct sockaddr_in hsa, lsa;
 
-    haddr4.addr4.s_addr = haddr;
-    laddr4.addr4.s_addr = laddr;
-    return tcpx_listen(slirp, AF_INET, haddr4, hport, laddr4, lport, flags);
+    memset(&hsa, 0, sizeof(hsa));
+    hsa.sin_family = AF_INET;
+    hsa.sin_addr.s_addr = haddr;
+    hsa.sin_port = hport;
+
+    memset(&lsa, 0, sizeof(lsa));
+    lsa.sin_family = AF_INET;
+    lsa.sin_addr.s_addr = laddr;
+    lsa.sin_port = lport;
+
+    return tcpx_listen(slirp, (union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
 }
 
 struct socket *
 tcp6_listen(Slirp *slirp, struct in6_addr haddr, u_int hport,
             struct in6_addr laddr, u_int lport, int flags)
 {
-    in4or6_addr haddr6, laddr6;
+    struct sockaddr_in6 hsa, lsa;
 
-    haddr6.addr6 = haddr;
-    laddr6.addr6 = laddr;
-    return tcpx_listen(slirp, AF_INET6, haddr6, hport, laddr6, lport, flags);
+    memset(&hsa, 0, sizeof(hsa));
+    hsa.sin6_family = AF_INET6;
+    hsa.sin6_addr = haddr;
+    hsa.sin6_port = hport;
+
+    memset(&lsa, 0, sizeof(lsa));
+    lsa.sin6_family = AF_INET6;
+    lsa.sin6_addr = laddr;
+    lsa.sin6_port = lport;
+
+    return tcpx_listen(slirp, (union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
 }
 
 /*

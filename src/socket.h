@@ -158,6 +158,10 @@ int sosendto(struct socket *, struct mbuf *);
 struct socket *tcp_listen(Slirp *, uint32_t, unsigned, uint32_t, unsigned, int);
 struct socket *tcp6_listen(Slirp *, struct in6_addr, u_int,
                            struct in6_addr, u_int, int);
+struct socket *tcpx_listen(Slirp *slirp,
+                           union slirp_sockaddr *haddr, socklen_t haddrlen,
+                           union slirp_sockaddr *laddr, socklen_t laddrlen,
+                           int flags);
 void soisfconnecting(register struct socket *);
 void soisfconnected(register struct socket *);
 void sofwdrain(struct socket *);
