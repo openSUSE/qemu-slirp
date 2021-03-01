@@ -106,8 +106,8 @@ struct socket {
 #define SS_INCOMING \
     0x2000 /* Connection was initiated by a host on the internet */
 
-static inline int sockaddr_equal(struct sockaddr_storage *a,
-                                 struct sockaddr_storage *b)
+static inline int sockaddr_equal(const struct sockaddr_storage *a,
+                                 const struct sockaddr_storage *b)
 {
     if (a->ss_family != b->ss_family) {
         return 0;
@@ -115,14 +115,14 @@ static inline int sockaddr_equal(struct sockaddr_storage *a,
 
     switch (a->ss_family) {
     case AF_INET: {
-        struct sockaddr_in *a4 = (struct sockaddr_in *)a;
-        struct sockaddr_in *b4 = (struct sockaddr_in *)b;
+        const struct sockaddr_in *a4 = (const struct sockaddr_in *)a;
+        const struct sockaddr_in *b4 = (const struct sockaddr_in *)b;
         return a4->sin_addr.s_addr == b4->sin_addr.s_addr &&
                a4->sin_port == b4->sin_port;
     }
     case AF_INET6: {
-        struct sockaddr_in6 *a6 = (struct sockaddr_in6 *)a;
-        struct sockaddr_in6 *b6 = (struct sockaddr_in6 *)b;
+        const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *)a;
+        const struct sockaddr_in6 *b6 = (const struct sockaddr_in6 *)b;
         return (in6_equal(&a6->sin6_addr, &b6->sin6_addr) &&
                 a6->sin6_port == b6->sin6_port);
     }
@@ -133,7 +133,7 @@ static inline int sockaddr_equal(struct sockaddr_storage *a,
     return 0;
 }
 
-static inline socklen_t sockaddr_size(struct sockaddr_storage *a)
+static inline socklen_t sockaddr_size(const struct sockaddr_storage *a)
 {
     switch (a->ss_family) {
     case AF_INET:
