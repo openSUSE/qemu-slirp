@@ -718,10 +718,16 @@ void slirp_pollfds_poll(Slirp *slirp, int select_error,
                 continue;
             }
 
+#ifndef __APPLE__
             /*
              * Check for URG data
              * This will soread as well, so no need to
-             * test for SLIRP_POLL_IN below if this succeeds
+             * test for SLIRP_POLL_IN below if this succeeds.
+             *
+             * This is however disabled on MacOS, which apparently always
+             * reports data as PRI when it is the last data of the
+             * connection. We would then report it out of band, which the guest
+             * would most probably not be ready for.
              */
             if (revents & SLIRP_POLL_PRI) {
                 ret = sorecvoob(so);
@@ -734,8 +740,10 @@ void slirp_pollfds_poll(Slirp *slirp, int select_error,
             /*
              * Check sockets for reading
              */
-            else if (revents &
-                     (SLIRP_POLL_IN | SLIRP_POLL_HUP | SLIRP_POLL_ERR)) {
+            else
+#endif
+                if (revents &
+                     (SLIRP_POLL_IN | SLIRP_POLL_HUP | SLIRP_POLL_ERR | SLIRP_POLL_PRI)) {
                 /*
                  * Check for incoming connections
                  */
