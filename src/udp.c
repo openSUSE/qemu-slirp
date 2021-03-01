@@ -354,8 +354,8 @@ static uint8_t udp_tos(struct socket *so)
 }
 
 struct socket *udpx_listen(Slirp *slirp,
-                           union slirp_sockaddr *haddr, socklen_t haddrlen,
-                           union slirp_sockaddr *laddr, socklen_t laddrlen,
+                           const union slirp_sockaddr *haddr, socklen_t haddrlen,
+                           const union slirp_sockaddr *laddr, socklen_t laddrlen,
                            int flags)
 {
     struct socket *so;
@@ -370,7 +370,7 @@ struct socket *udpx_listen(Slirp *slirp,
     so->so_expire = curtime + SO_EXPIRE;
     insque(so, &slirp->udb);
 
-    if (bind(so->s, (struct sockaddr *)haddr, haddrlen) < 0) {
+    if (bind(so->s, (const struct sockaddr *)haddr, haddrlen) < 0) {
         udp_detach(so);
         return NULL;
     }
@@ -405,7 +405,7 @@ struct socket *udp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
     lsa.sin_addr.s_addr = laddr;
     lsa.sin_port = lport;
 
-    return udpx_listen(slirp, (union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
+    return udpx_listen(slirp, (const union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
 }
 
 struct socket *
@@ -424,5 +424,5 @@ udp6_listen(Slirp *slirp, struct in6_addr haddr, u_int hport,
     lsa.sin6_addr = laddr;
     lsa.sin6_port = lport;
 
-    return udpx_listen(slirp, (union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
+    return udpx_listen(slirp, (const union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
 }

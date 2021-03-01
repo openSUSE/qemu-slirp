@@ -737,8 +737,8 @@ int sosendto(struct socket *so, struct mbuf *m)
  * Listen for incoming TCP connections
  */
 struct socket *tcpx_listen(Slirp *slirp,
-                           union slirp_sockaddr *haddr, socklen_t haddrlen,
-                           union slirp_sockaddr *laddr, socklen_t laddrlen,
+                           const union slirp_sockaddr *haddr, socklen_t haddrlen,
+                           const union slirp_sockaddr *laddr, socklen_t laddrlen,
                            int flags)
 {
     struct socket *so;
@@ -750,11 +750,11 @@ struct socket *tcpx_listen(Slirp *slirp,
     char addrstr[INET6_ADDRSTRLEN];
     char portstr[6];
     int ret;
-    ret = getnameinfo((struct sockaddr *) haddr, haddrlen, addrstr, sizeof(addrstr), portstr, sizeof(portstr), NI_NUMERICHOST|NI_NUMERICSERV);
+    ret = getnameinfo((const struct sockaddr *) haddr, haddrlen, addrstr, sizeof(addrstr), portstr, sizeof(portstr), NI_NUMERICHOST|NI_NUMERICSERV);
     g_assert(ret == 0);
     DEBUG_ARG("haddr = %s", addrstr);
     DEBUG_ARG("hport = %s", portstr);
-    ret = getnameinfo((struct sockaddr *) laddr, laddrlen, addrstr, sizeof(addrstr), portstr, sizeof(portstr), NI_NUMERICHOST|NI_NUMERICSERV);
+    ret = getnameinfo((const struct sockaddr *) laddr, laddrlen, addrstr, sizeof(addrstr), portstr, sizeof(portstr), NI_NUMERICHOST|NI_NUMERICSERV);
     g_assert(ret == 0);
     DEBUG_ARG("laddr = %s", addrstr);
     DEBUG_ARG("lport = %s", portstr);
@@ -782,7 +782,7 @@ struct socket *tcpx_listen(Slirp *slirp,
     s = slirp_socket(haddr->ss.ss_family, SOCK_STREAM, 0);
     if ((s < 0) ||
         (slirp_socket_set_fast_reuse(s) < 0) ||
-        (bind(s, (struct sockaddr *)haddr, haddrlen) < 0) ||
+        (bind(s, (const struct sockaddr *)haddr, haddrlen) < 0) ||
         (listen(s, 1) < 0)) {
         int tmperrno = errno; /* Don't clobber the real reason we failed */
         if (s >= 0) {
@@ -823,7 +823,7 @@ struct socket *tcp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
     lsa.sin_addr.s_addr = laddr;
     lsa.sin_port = lport;
 
-    return tcpx_listen(slirp, (union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
+    return tcpx_listen(slirp, (const union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
 }
 
 struct socket *
@@ -842,7 +842,7 @@ tcp6_listen(Slirp *slirp, struct in6_addr haddr, u_int hport,
     lsa.sin6_addr = laddr;
     lsa.sin6_port = lport;
 
-    return tcpx_listen(slirp, (union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
+    return tcpx_listen(slirp, (const union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
 }
 
 /*
