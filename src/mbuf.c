@@ -29,7 +29,7 @@ void m_init(Slirp *slirp)
     slirp->m_usedlist.qh_link = slirp->m_usedlist.qh_rlink = &slirp->m_usedlist;
 }
 
-void m_cleanup_list(struct quehead *list_head)
+static void m_cleanup_list(struct quehead *list_head)
 {
     struct mbuf *m, *next;
 
