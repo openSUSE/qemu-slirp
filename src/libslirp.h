@@ -205,6 +205,9 @@ int slirp_remove_guestfwd(Slirp *slirp, struct in_addr guest_addr,
 /* Return a human-readable state of the slirp stack */
 char *slirp_connection_info(Slirp *slirp);
 
+/* Return a human-readable state of the NDP/ARP tables */
+char *slirp_neighbor_info(Slirp *slirp);
+
 /* Save the slirp state through the write_cb. The opaque pointer is passed as
  * such to the write_cb. */
 void slirp_state_save(Slirp *s, SlirpWriteCb write_cb, void *opaque);

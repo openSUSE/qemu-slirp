@@ -377,6 +377,48 @@ char *slirp_connection_info(Slirp *slirp)
     return g_string_free(str, FALSE);
 }
 
+char *slirp_neighbor_info(Slirp *slirp)
+{
+    GString *str = g_string_new(NULL);
+    ArpTable *arp_table = &slirp->arp_table;
+    NdpTable *ndp_table = &slirp->ndp_table;
+    char ip_addr[INET6_ADDRSTRLEN];
+    char eth_addr[ETH_ADDRSTRLEN];
+    const char *ip;
+
+    g_string_append_printf(str, "  %5s  %-17s  %s\n",
+                           "Table", "MacAddr", "IP Address");
+
+    for (int i = 0; i < ARP_TABLE_SIZE; ++i) {
+        struct in_addr addr;
+        addr.s_addr = arp_table->table[i].ar_sip;
+        if (!addr.s_addr) {
+            continue;
+        }
+        ip = inet_ntop(AF_INET, &addr, ip_addr, sizeof(ip_addr));
+        g_assert(ip != NULL);
+        g_string_append_printf(str, "  %5s  %-17s  %s\n", "ARP",
+                               slirp_ether_ntoa(arp_table->table[i].ar_sha,
+                                                eth_addr, sizeof(eth_addr)),
+                               ip);
+    }
+
+    for (int i = 0; i < NDP_TABLE_SIZE; ++i) {
+        if (in6_zero(&ndp_table->table[i].ip_addr)) {
+            continue;
+        }
+        ip = inet_ntop(AF_INET6, &ndp_table->table[i].ip_addr, ip_addr,
+                       sizeof(ip_addr));
+        g_assert(ip != NULL);
+        g_string_append_printf(str, "  %5s  %-17s  %s\n", "NDP",
+                               slirp_ether_ntoa(ndp_table->table[i].eth_addr,
+                                                eth_addr, sizeof(eth_addr)),
+                               ip);
+    }
+
+    return g_string_free(str, FALSE);
+}
+
 int slirp_bind_outbound(struct socket *so, unsigned short af)
 {
     int ret = 0;
