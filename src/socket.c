@@ -782,6 +782,7 @@ struct socket *tcpx_listen(Slirp *slirp,
 
     s = slirp_socket(haddr->sa_family, SOCK_STREAM, 0);
     if ((s < 0) ||
+        (haddr->sa_family == AF_INET6 && slirp_socket_set_v6only(s, (flags & SS_HOSTFWD_V6ONLY) != 0) < 0) ||
         (slirp_socket_set_fast_reuse(s) < 0) ||
         (bind(s, haddr, haddrlen) < 0) ||
         (listen(s, 1) < 0)) {
