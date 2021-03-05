@@ -354,15 +354,15 @@ static uint8_t udp_tos(struct socket *so)
 }
 
 struct socket *udpx_listen(Slirp *slirp,
-                           const union slirp_sockaddr *haddr, socklen_t haddrlen,
-                           const union slirp_sockaddr *laddr, socklen_t laddrlen,
+                           const struct sockaddr *haddr, socklen_t haddrlen,
+                           const struct sockaddr *laddr, socklen_t laddrlen,
                            int flags)
 {
     struct socket *so;
     socklen_t addrlen;
 
     so = socreate(slirp);
-    so->s = slirp_socket(haddr->ss.ss_family, SOCK_DGRAM, 0);
+    so->s = slirp_socket(haddr->sa_family, SOCK_DGRAM, 0);
     if (so->s < 0) {
         sofree(so);
         return NULL;
@@ -370,17 +370,17 @@ struct socket *udpx_listen(Slirp *slirp,
     so->so_expire = curtime + SO_EXPIRE;
     insque(so, &slirp->udb);
 
-    if (bind(so->s, (const struct sockaddr *)haddr, haddrlen) < 0) {
+    if (bind(so->s, haddr, haddrlen) < 0) {
         udp_detach(so);
         return NULL;
     }
     slirp_socket_set_fast_reuse(so->s);
 
     addrlen = sizeof(so->fhost);
-    getsockname(so->s, (struct sockaddr *)&so->fhost, &addrlen);
+    getsockname(so->s, &so->fhost.sa, &addrlen);
     sotranslate_accept(so);
 
-    so->lhost = *laddr;
+    sockaddr_copy(&so->lhost.sa, sizeof(so->lhost), laddr, laddrlen);
 
     if (flags != SS_FACCEPTONCE)
         so->so_expire = 0;
@@ -405,7 +405,7 @@ struct socket *udp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
     lsa.sin_addr.s_addr = laddr;
     lsa.sin_port = lport;
 
-    return udpx_listen(slirp, (const union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
+    return udpx_listen(slirp, (const struct sockaddr *) &hsa, sizeof(hsa), (struct sockaddr *) &lsa, sizeof(lsa), flags);
 }
 
 struct socket *
@@ -424,5 +424,5 @@ udp6_listen(Slirp *slirp, struct in6_addr haddr, u_int hport,
     lsa.sin6_addr = laddr;
     lsa.sin6_port = lport;
 
-    return udpx_listen(slirp, (const union slirp_sockaddr*) &hsa, sizeof(hsa), (union slirp_sockaddr*) &lsa, sizeof(lsa), flags);
+    return udpx_listen(slirp, (const struct sockaddr *) &hsa, sizeof(hsa), (struct sockaddr *) &lsa, sizeof(lsa), flags);
 }

@@ -24,6 +24,7 @@ typedef union in4or6_addr in4or6_addr;
  */
 
 union slirp_sockaddr {
+    struct sockaddr sa;
     struct sockaddr_storage ss;
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
@@ -145,6 +146,14 @@ static inline socklen_t sockaddr_size(const struct sockaddr_storage *a)
     }
 }
 
+static inline void sockaddr_copy(struct sockaddr *dst, socklen_t dstlen, const struct sockaddr *src, socklen_t srclen)
+{
+    socklen_t len = sockaddr_size((const struct sockaddr_storage *) src);
+    g_assert(len <= srclen);
+    g_assert(len <= dstlen);
+    memcpy(dst, src, len);
+}
+
 struct socket *solookup(struct socket **, struct socket *,
                         struct sockaddr_storage *, struct sockaddr_storage *);
 struct socket *socreate(Slirp *);
@@ -159,8 +168,8 @@ struct socket *tcp_listen(Slirp *, uint32_t, unsigned, uint32_t, unsigned, int);
 struct socket *tcp6_listen(Slirp *, struct in6_addr, u_int,
                            struct in6_addr, u_int, int);
 struct socket *tcpx_listen(Slirp *slirp,
-                           const union slirp_sockaddr *haddr, socklen_t haddrlen,
-                           const union slirp_sockaddr *laddr, socklen_t laddrlen,
+                           const struct sockaddr *haddr, socklen_t haddrlen,
+                           const struct sockaddr *laddr, socklen_t laddrlen,
                            int flags);
 void soisfconnecting(register struct socket *);
 void soisfconnected(register struct socket *);
