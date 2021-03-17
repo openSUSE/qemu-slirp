@@ -143,7 +143,7 @@ void if_start(Slirp *slirp)
     bool from_batchq = false;
     struct mbuf *ifm, *ifm_next, *ifqt;
 
-    DEBUG_CALL("if_start");
+    DEBUG_VERBOSE_CALL("if_start");
 
     if (slirp->if_start_busy) {
         return;
