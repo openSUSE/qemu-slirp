@@ -362,6 +362,7 @@ static void slirp_init_once(void)
             { "misc", DBG_MISC },
             { "error", DBG_ERROR },
             { "tftp", DBG_TFTP },
+            { "verbose_call", DBG_VERBOSE_CALL },
         };
         slirp_debug = g_parse_debug_string(debug, keys, G_N_ELEMENTS(keys));
     }
