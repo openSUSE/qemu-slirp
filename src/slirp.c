@@ -1141,6 +1141,78 @@ int slirp_add_hostfwd(Slirp *slirp, int is_udp, struct in_addr host_addr,
     return 0;
 }
 
+int slirp_remove_hostxfwd(Slirp *slirp,
+                          const struct sockaddr *haddr, socklen_t haddrlen,
+                          int flags)
+{
+    struct socket *so;
+    struct socket *head = (flags & SLIRP_HOSTFWD_UDP ? &slirp->udb : &slirp->tcb);
+    struct sockaddr_storage addr;
+    socklen_t addr_len;
+
+    for (so = head->so_next; so != head; so = so->so_next) {
+        addr_len = sizeof(addr);
+        if ((so->so_state & SS_HOSTFWD) &&
+            getsockname(so->s, (struct sockaddr *)&addr, &addr_len) == 0 &&
+            sockaddr_equal(&addr, (const struct sockaddr_storage *) haddr)) {
+            so->slirp->cb->unregister_poll_fd(so->s, so->slirp->opaque);
+            closesocket(so->s);
+            sofree(so);
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
+int slirp_add_hostxfwd(Slirp *slirp,
+                       const struct sockaddr *haddr, socklen_t haddrlen,
+                       const struct sockaddr *gaddr, socklen_t gaddrlen,
+                       int flags)
+{
+    struct sockaddr_in gdhcp_addr;
+    if (gaddr->sa_family == AF_INET) {
+        const struct sockaddr_in *gaddr_in = (const struct sockaddr_in *) gaddr;
+
+        if (gaddrlen < sizeof(struct sockaddr_in))
+            return -1;
+
+        if (!gaddr_in->sin_addr.s_addr) {
+            gdhcp_addr = *gaddr_in;
+            gdhcp_addr.sin_addr = slirp->vdhcp_startaddr;
+            gaddr = (struct sockaddr *) &gdhcp_addr;
+            gaddrlen = sizeof(gdhcp_addr);
+        }
+    } else {
+        const struct sockaddr_in6 *gaddr_in6 = (const struct sockaddr_in6 *) gaddr;
+
+        if (gaddrlen < sizeof(struct sockaddr_in6))
+            return -1;
+
+        if (in6_zero(&gaddr_in6->sin6_addr)) {
+            /*
+             * Libslirp currently only provides a stateless DHCPv6 server, thus
+             * we can't translate "addr-any" to the guest. Instead, for now,
+             * reject it.
+             */
+            return -1;
+        }
+    }
+
+    if (flags & SLIRP_HOSTFWD_UDP) {
+        if (!udpx_listen(slirp, haddr, haddrlen,
+                                gaddr, gaddrlen,
+                                SS_HOSTFWD))
+            return -1;
+    } else {
+        if (!tcpx_listen(slirp, haddr, haddrlen,
+                                gaddr, gaddrlen,
+                                SS_HOSTFWD))
+            return -1;
+    }
+    return 0;
+}
+
 int slirp_remove_ipv6_hostfwd(Slirp *slirp, int is_udp,
                               struct in6_addr host_addr, int host_port)
 {

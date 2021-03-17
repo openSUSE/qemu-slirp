@@ -30,6 +30,8 @@ SLIRP_4.2 {
 } SLIRP_4.1;
 
 SLIRP_4.5 {
+    slirp_add_hostxfwd;
+    slirp_remove_hostxfwd;
     slirp_add_ipv6_hostfwd;
     slirp_remove_ipv6_hostfwd;
     slirp_neighbor_info;

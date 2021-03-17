@@ -8,6 +8,7 @@
 
 #ifdef _WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #include <in6addr.h>
 #else
 #include <netinet/in.h>
@@ -166,7 +167,16 @@ int slirp_add_hostfwd(Slirp *slirp, int is_udp, struct in_addr host_addr,
                       int host_port, struct in_addr guest_addr, int guest_port);
 int slirp_remove_hostfwd(Slirp *slirp, int is_udp, struct in_addr host_addr,
                          int host_port);
-/* TODO: rather introduce a function that takes two sockaddr */
+
+#define SLIRP_HOSTFWD_UDP 1
+int slirp_add_hostxfwd(Slirp *slirp,
+                       const struct sockaddr *haddr, socklen_t haddrlen,
+                       const struct sockaddr *gaddr, socklen_t gaddrlen,
+                       int flags);
+int slirp_remove_hostxfwd(Slirp *slirp,
+                          const struct sockaddr *haddr, socklen_t haddrlen,
+                          int flags);
+
 int slirp_add_ipv6_hostfwd(Slirp *slirp, int is_udp,
                            struct in6_addr host_addr, int host_port,
                            struct in6_addr guest_addr, int guest_port);
