@@ -763,10 +763,7 @@ struct socket *tcpx_listen(Slirp *slirp,
     so = socreate(slirp);
 
     /* Don't tcp_attach... we don't need so_snd nor so_rcv */
-    if ((so->so_tcpcb = tcp_newtcpcb(so)) == NULL) {
-        g_free(so);
-        return NULL;
-    }
+    so->so_tcpcb = tcp_newtcpcb(so);
     insque(so, &slirp->tcb);
 
     /*
