@@ -1214,58 +1214,6 @@ int slirp_add_hostxfwd(Slirp *slirp,
     return 0;
 }
 
-int slirp_remove_ipv6_hostfwd(Slirp *slirp, int is_udp,
-                              struct in6_addr host_addr, int host_port)
-{
-    struct socket *so;
-    struct socket *head = (is_udp ? &slirp->udb : &slirp->tcb);
-    struct sockaddr_in6 addr;
-    int port = htons(host_port);
-    socklen_t addr_len;
-
-    for (so = head->so_next; so != head; so = so->so_next) {
-        addr_len = sizeof(addr);
-        if ((so->so_state & SS_HOSTFWD) &&
-            getsockname(so->s, (struct sockaddr *)&addr, &addr_len) == 0 &&
-            addr_len == sizeof(addr) &&
-            addr.sin6_family == AF_INET6 &&
-            !memcmp(&addr.sin6_addr, &host_addr, sizeof(host_addr)) &&
-            addr.sin6_port == port) {
-            so->slirp->cb->unregister_poll_fd(so->s, so->slirp->opaque);
-            closesocket(so->s);
-            sofree(so);
-            return 0;
-        }
-    }
-
-    return -1;
-}
-
-int slirp_add_ipv6_hostfwd(Slirp *slirp, int is_udp,
-                          struct in6_addr host_addr, int host_port,
-                          struct in6_addr guest_addr, int guest_port)
-{
-    /*
-     * Libslirp currently only provides a stateless DHCPv6 server, thus we
-     * can't translate "addr-any" to the guest. Instead, for now, reject it.
-     */
-    if (in6_zero(&guest_addr)) {
-        return -1;
-    }
-
-    if (is_udp) {
-        if (!udp6_listen(slirp, host_addr, htons(host_port),
-                         guest_addr, htons(guest_port), SS_HOSTFWD))
-            return -1;
-    } else {
-        if (!tcp6_listen(slirp, host_addr, htons(host_port),
-                         guest_addr, htons(guest_port), SS_HOSTFWD))
-            return -1;
-    }
-
-    return 0;
-}
-
 /* TODO: IPv6 */
 static bool check_guestfwd(Slirp *slirp, struct in_addr *guest_addr,
                            int guest_port)

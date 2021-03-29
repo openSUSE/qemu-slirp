@@ -177,12 +177,6 @@ int slirp_remove_hostxfwd(Slirp *slirp,
                           const struct sockaddr *haddr, socklen_t haddrlen,
                           int flags);
 
-int slirp_add_ipv6_hostfwd(Slirp *slirp, int is_udp,
-                           struct in6_addr host_addr, int host_port,
-                           struct in6_addr guest_addr, int guest_port);
-int slirp_remove_ipv6_hostfwd(Slirp *slirp, int is_udp,
-                              struct in6_addr host_addr, int host_port);
-
 /* Set up port forwarding between a port in the guest network and a
  * command running on the host */
 int slirp_add_exec(Slirp *slirp, const char *cmdline,

@@ -165,8 +165,6 @@ int sowrite(struct socket *);
 void sorecvfrom(struct socket *);
 int sosendto(struct socket *, struct mbuf *);
 struct socket *tcp_listen(Slirp *, uint32_t, unsigned, uint32_t, unsigned, int);
-struct socket *tcp6_listen(Slirp *, struct in6_addr, u_int,
-                           struct in6_addr, u_int, int);
 struct socket *tcpx_listen(Slirp *slirp,
                            const struct sockaddr *haddr, socklen_t haddrlen,
                            const struct sockaddr *laddr, socklen_t laddrlen,

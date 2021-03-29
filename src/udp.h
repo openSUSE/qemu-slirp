@@ -82,8 +82,6 @@ void udp_input(register struct mbuf *, int);
 int udp_attach(struct socket *, unsigned short af);
 void udp_detach(struct socket *);
 struct socket *udp_listen(Slirp *, uint32_t, unsigned, uint32_t, unsigned, int);
-struct socket *udp6_listen(Slirp *slirp, struct in6_addr, u_int,
-                            struct in6_addr, u_int, int);
 struct socket *udpx_listen(Slirp *,
                            const struct sockaddr *haddr, socklen_t haddrlen,
                            const struct sockaddr *laddr, socklen_t laddrlen,

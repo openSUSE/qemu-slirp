@@ -407,22 +407,3 @@ struct socket *udp_listen(Slirp *slirp, uint32_t haddr, unsigned hport,
 
     return udpx_listen(slirp, (const struct sockaddr *) &hsa, sizeof(hsa), (struct sockaddr *) &lsa, sizeof(lsa), flags);
 }
-
-struct socket *
-udp6_listen(Slirp *slirp, struct in6_addr haddr, u_int hport,
-            struct in6_addr laddr, u_int lport, int flags)
-{
-    struct sockaddr_in6 hsa, lsa;
-
-    memset(&hsa, 0, sizeof(hsa));
-    hsa.sin6_family = AF_INET6;
-    hsa.sin6_addr = haddr;
-    hsa.sin6_port = hport;
-
-    memset(&lsa, 0, sizeof(lsa));
-    lsa.sin6_family = AF_INET6;
-    lsa.sin6_addr = laddr;
-    lsa.sin6_port = lport;
-
-    return udpx_listen(slirp, (const struct sockaddr *) &hsa, sizeof(hsa), (struct sockaddr *) &lsa, sizeof(lsa), flags);
-}
