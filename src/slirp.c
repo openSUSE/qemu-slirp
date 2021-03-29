@@ -1175,8 +1175,10 @@ int slirp_add_hostxfwd(Slirp *slirp,
     if (gaddr->sa_family == AF_INET) {
         const struct sockaddr_in *gaddr_in = (const struct sockaddr_in *) gaddr;
 
-        if (gaddrlen < sizeof(struct sockaddr_in))
+        if (gaddrlen < sizeof(struct sockaddr_in)) {
+            errno = EINVAL;
             return -1;
+        }
 
         if (!gaddr_in->sin_addr.s_addr) {
             gdhcp_addr = *gaddr_in;
@@ -1187,8 +1189,10 @@ int slirp_add_hostxfwd(Slirp *slirp,
     } else {
         const struct sockaddr_in6 *gaddr_in6 = (const struct sockaddr_in6 *) gaddr;
 
-        if (gaddrlen < sizeof(struct sockaddr_in6))
+        if (gaddrlen < sizeof(struct sockaddr_in6)) {
+            errno = EINVAL;
             return -1;
+        }
 
         if (in6_zero(&gaddr_in6->sin6_addr)) {
             /*
@@ -1196,6 +1200,7 @@ int slirp_add_hostxfwd(Slirp *slirp,
              * we can't translate "addr-any" to the guest. Instead, for now,
              * reject it.
              */
+            errno = EINVAL;
             return -1;
         }
     }
