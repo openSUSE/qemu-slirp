@@ -71,6 +71,7 @@ static void slirp_set_cloexec(int fd)
 
 /*
  * Opens a socket with FD_CLOEXEC set
+ * On failure errno contains the reason.
  */
 int slirp_socket(int domain, int type, int protocol)
 {

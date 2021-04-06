@@ -735,6 +735,7 @@ int sosendto(struct socket *so, struct mbuf *m)
 
 /*
  * Listen for incoming TCP connections
+ * On failure errno contains the reason.
  */
 struct socket *tcpx_listen(Slirp *slirp,
                            const struct sockaddr *haddr, socklen_t haddrlen,
