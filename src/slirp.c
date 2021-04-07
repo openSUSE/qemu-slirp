@@ -1172,6 +1172,11 @@ int slirp_add_hostxfwd(Slirp *slirp,
                        int flags)
 {
     struct sockaddr_in gdhcp_addr;
+    int fwd_flags = SS_HOSTFWD;
+
+    if (flags & SLIRP_HOSTFWD_V6ONLY)
+        fwd_flags |= SS_HOSTFWD_V6ONLY;
+
     if (gaddr->sa_family == AF_INET) {
         const struct sockaddr_in *gaddr_in = (const struct sockaddr_in *) gaddr;
 
@@ -1208,12 +1213,12 @@ int slirp_add_hostxfwd(Slirp *slirp,
     if (flags & SLIRP_HOSTFWD_UDP) {
         if (!udpx_listen(slirp, haddr, haddrlen,
                                 gaddr, gaddrlen,
-                                SS_HOSTFWD))
+                                fwd_flags))
             return -1;
     } else {
         if (!tcpx_listen(slirp, haddr, haddrlen,
                                 gaddr, gaddrlen,
-                                SS_HOSTFWD))
+                                fwd_flags))
             return -1;
     }
     return 0;

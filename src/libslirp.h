@@ -169,6 +169,7 @@ int slirp_remove_hostfwd(Slirp *slirp, int is_udp, struct in_addr host_addr,
                          int host_port);
 
 #define SLIRP_HOSTFWD_UDP 1
+#define SLIRP_HOSTFWD_V6ONLY 2
 int slirp_add_hostxfwd(Slirp *slirp,
                        const struct sockaddr *haddr, socklen_t haddrlen,
                        const struct sockaddr *gaddr, socklen_t gaddrlen,

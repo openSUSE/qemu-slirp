@@ -39,6 +39,7 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <windows.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/socket.h>
 #include <netinet/tcp.h>
@@ -160,6 +161,11 @@ int slirp_inet_aton(const char *cp, struct in_addr *ia);
 
 int slirp_socket(int domain, int type, int protocol);
 void slirp_set_nonblock(int fd);
+
+static inline int slirp_socket_set_v6only(int fd, int v)
+{
+    return setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &v, sizeof(v));
+}
 
 static inline int slirp_socket_set_nodelay(int fd)
 {

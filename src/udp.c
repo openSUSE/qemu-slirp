@@ -370,6 +370,8 @@ struct socket *udpx_listen(Slirp *slirp,
         errno = save_errno;
         return NULL;
     }
+    if (haddr->sa_family == AF_INET6)
+        slirp_socket_set_v6only(so->s, (flags & SS_HOSTFWD_V6ONLY) != 0);
     so->so_expire = curtime + SO_EXPIRE;
     insque(so, &slirp->udb);
 

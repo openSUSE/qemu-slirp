@@ -106,6 +106,7 @@ struct socket {
 #define SS_HOSTFWD 0x1000 /* Socket describes host->guest forwarding */
 #define SS_INCOMING \
     0x2000 /* Connection was initiated by a host on the internet */
+#define SS_HOSTFWD_V6ONLY 0x4000 /* Only bind on v6 addresses */
 
 static inline int sockaddr_equal(const struct sockaddr_storage *a,
                                  const struct sockaddr_storage *b)
