@@ -113,6 +113,12 @@ struct ndpentry {
 
 typedef struct NdpTable {
     struct ndpentry table[NDP_TABLE_SIZE];
+    /*
+     * The table is a cache with old entries overwritten when the table fills.
+     * Preserve the first entry: it is the guest, which is needed for lazy
+     * hostfwd guest address assignment.
+     */
+    struct in6_addr guest_in6_addr;
     int next_victim;
 } NdpTable;
 

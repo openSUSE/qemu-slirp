@@ -1187,22 +1187,17 @@ int slirp_add_hostxfwd(Slirp *slirp,
             gaddrlen = sizeof(gdhcp_addr);
         }
     } else {
-        const struct sockaddr_in6 *gaddr_in6 = (const struct sockaddr_in6 *) gaddr;
-
         if (gaddrlen < sizeof(struct sockaddr_in6)) {
             errno = EINVAL;
             return -1;
         }
 
-        if (in6_zero(&gaddr_in6->sin6_addr)) {
-            /*
-             * Libslirp currently only provides a stateless DHCPv6 server, thus
-             * we can't translate "addr-any" to the guest. Instead, for now,
-             * reject it.
-             */
-            errno = EINVAL;
-            return -1;
-        }
+        /*
+         * Libslirp currently only provides a stateless DHCPv6 server, thus
+         * we can't translate "addr-any" to the guest here. Instead, we defer
+         * performing the translation to when it's needed. See
+         * soassign_guest_addr_if_needed().
+         */
     }
 
     if (flags & SLIRP_HOSTFWD_UDP) {
