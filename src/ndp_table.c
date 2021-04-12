@@ -39,6 +39,10 @@ void ndp_table_add(Slirp *slirp, struct in6_addr ip_addr,
 
     /* No entry found, create a new one */
     DEBUG_CALL(" create new entry");
+    /* Save the first entry, it is the guest. */
+    if (in6_zero(&ndp_table->guest_in6_addr)) {
+        ndp_table->guest_in6_addr = ip_addr;
+    }
     ndp_table->table[ndp_table->next_victim].ip_addr = ip_addr;
     memcpy(ndp_table->table[ndp_table->next_victim].eth_addr, ethaddr,
            ETH_ALEN);

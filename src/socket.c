@@ -680,6 +680,28 @@ void sorecvfrom(struct socket *so)
              */
             saddr = addr;
             sotranslate_in(so, &saddr);
+
+            /* Perform lazy guest IP address resolution if needed. */
+            if (so->so_state & SS_HOSTFWD) {
+                if (soassign_guest_addr_if_needed(so) < 0) {
+                    DEBUG_MISC(" guest address not available yet");
+                    switch (so->so_lfamily) {
+                    case AF_INET:
+                        icmp_send_error(so->so_m, ICMP_UNREACH,
+                                        ICMP_UNREACH_HOST, 0,
+                                        "guest address not available yet");
+                        break;
+                    case AF_INET6:
+                        icmp6_send_error(so->so_m, ICMP6_UNREACH,
+                                         ICMP6_UNREACH_ADDRESS);
+                        break;
+                    default:
+                        g_assert_not_reached();
+                    }
+                    m_free(m);
+                    return;
+                }
+            }
             daddr = so->lhost.ss;
 
             switch (so->so_ffamily) {
@@ -760,6 +782,15 @@ struct socket *tcpx_listen(Slirp *slirp,
     DEBUG_ARG("laddr = %s", addrstr);
     DEBUG_ARG("lport = %s", portstr);
     DEBUG_ARG("flags = %x", flags);
+
+    /*
+     * SS_HOSTFWD sockets can be accepted multiple times, so they can't be
+     * SS_FACCEPTONCE. Also, SS_HOSTFWD connections can be accepted and
+     * immediately closed if the guest address isn't available yet, which is
+     * incompatible with the "accept once" concept. Correct code will never
+     * request both, so disallow their combination by assertion.
+     */
+    g_assert(!((flags & SS_HOSTFWD) && (flags & SS_FACCEPTONCE)));
 
     so = socreate(slirp);
 
@@ -1020,4 +1051,54 @@ void sodrop(struct socket *s, int num)
     if (sbdrop(&s->so_snd, num)) {
         s->slirp->cb->notify(s->slirp->opaque);
     }
+}
+
+/*
+ * Translate "addr-any" in so->lhost to the guest's actual address.
+ * Returns 0 for success, or -1 if the guest doesn't have an address yet
+ * with errno set to EHOSTUNREACH.
+ *
+ * The guest address is taken from the first entry in the ARP table for IPv4
+ * and the first entry in the NDP table for IPv6.
+ * Note: The IPv4 path isn't exercised yet as all hostfwd "" guest translations
+ * are handled immediately by using slirp->vdhcp_startaddr.
+ */
+int soassign_guest_addr_if_needed(struct socket *so)
+{
+    Slirp *slirp = so->slirp;
+    /* AF_INET6 addresses are bigger than AF_INET, so this is big enough. */
+    char addrstr[INET6_ADDRSTRLEN];
+    char portstr[6];
+
+    g_assert(so->so_state & SS_HOSTFWD);
+
+    switch (so->so_ffamily) {
+    case AF_INET:
+        if (so->so_laddr.s_addr == INADDR_ANY) {
+            g_assert_not_reached();
+        }
+        break;
+
+    case AF_INET6:
+        if (in6_zero(&so->so_laddr6)) {
+            int ret;
+            if (in6_zero(&slirp->ndp_table.guest_in6_addr)) {
+                errno = EHOSTUNREACH;
+                return -1;
+            }
+            so->so_laddr6 = slirp->ndp_table.guest_in6_addr;
+            ret = getnameinfo((const struct sockaddr *) &so->lhost.ss,
+                              sizeof(so->lhost.ss), addrstr, sizeof(addrstr),
+                              portstr, sizeof(portstr),
+                              NI_NUMERICHOST|NI_NUMERICSERV);
+            g_assert(ret == 0);
+            DEBUG_MISC("%s: new ip = [%s]:%s", __func__, addrstr, portstr);
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    return 0;
 }

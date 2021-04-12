@@ -181,6 +181,6 @@ int sotranslate_out(struct socket *, struct sockaddr_storage *);
 void sotranslate_in(struct socket *, struct sockaddr_storage *);
 void sotranslate_accept(struct socket *);
 void sodrop(struct socket *, int num);
-
+int soassign_guest_addr_if_needed(struct socket *so);
 
 #endif /* SLIRP_SOCKET_H */
