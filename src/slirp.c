@@ -249,9 +249,13 @@ static int get_dns_addr_resolv_conf(int af, void *pdns_addr, void *cached_addr,
     char buff2[257];
     FILE *f;
     int found = 0;
-    void *tmp_addr = alloca(addrlen);
+    union {
+        struct in_addr dns_addr;
+        struct in6_addr dns6_addr;
+    } tmp_addr;
     unsigned if_index;
 
+    assert(sizeof(tmp_addr) >= addrlen);
     f = fopen("/etc/resolv.conf", "r");
     if (!f)
         return -1;
@@ -267,13 +271,13 @@ static int get_dns_addr_resolv_conf(int af, void *pdns_addr, void *cached_addr,
                 if_index = 0;
             }
 
-            if (!inet_pton(af, buff2, tmp_addr)) {
+            if (!inet_pton(af, buff2, &tmp_addr)) {
                 continue;
             }
             /* If it's the first one, set it to dns_addr */
             if (!found) {
-                memcpy(pdns_addr, tmp_addr, addrlen);
-                memcpy(cached_addr, tmp_addr, addrlen);
+                memcpy(pdns_addr, &tmp_addr, addrlen);
+                memcpy(cached_addr, &tmp_addr, addrlen);
                 if (scope_id) {
                     *scope_id = if_index;
                 }
@@ -285,7 +289,7 @@ static int get_dns_addr_resolv_conf(int af, void *pdns_addr, void *cached_addr,
                 break;
             } else if (slirp_debug & DBG_MISC) {
                 char s[INET6_ADDRSTRLEN];
-                const char *res = inet_ntop(af, tmp_addr, s, sizeof(s));
+                const char *res = inet_ntop(af, &tmp_addr, s, sizeof(s));
                 if (!res) {
                     res = "  (string conversion error)";
                 }
