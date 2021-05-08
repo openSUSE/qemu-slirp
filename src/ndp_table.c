@@ -62,7 +62,12 @@ bool ndp_table_search(Slirp *slirp, struct in6_addr ip_addr,
     DEBUG_CALL("ndp_table_search");
     DEBUG_ARG("ip = %s", addrstr);
 
-    assert(!in6_zero(&ip_addr));
+    /* If unspecified address */
+    if (in6_zero(&ip_addr)) {
+        /* return Ethernet broadcast address */
+        memset(out_ethaddr, 0xff, ETH_ALEN);
+        return 1;
+    }
 
     /* Multicast address: fec0::abcd:efgh/8 -> 33:33:ab:cd:ef:gh */
     if (IN6_IS_ADDR_MULTICAST(&ip_addr)) {
