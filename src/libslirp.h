@@ -47,11 +47,11 @@ typedef int (*SlirpGetREventsCb)(int idx, void *opaque);
  */
 typedef struct SlirpCb {
     /*
-     * Send an ethernet frame to the guest network. The opaque
-     * parameter is the one given to slirp_init(). The function
-     * doesn't need to send all the data and may return <len (no
-     * buffering is done on libslirp side, so the data will be dropped
-     * in this case). <0 reports an IO error.
+     * Send an ethernet frame to the guest network. The opaque parameter is the
+     * one given to slirp_init(). If the guest is not ready to receive a frame,
+     * the function can just drop the data. TCP will then handle retransmissions
+     * at a lower pace.
+     * <0 reports an IO error.
      */
     SlirpWriteCb send_packet;
     /* Print a message for an error due to guest misbehavior.  */
