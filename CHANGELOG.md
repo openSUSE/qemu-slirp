@@ -5,15 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.5.0] - 2021-05-18
 
 ### Added
 
+ - IPv6 forwarding. !62 !75 !77
+ - slirp_neighbor_info() to dump the ARP/NDP tables. !71
+
 ### Changed
 
-### Deprecated
+ - Lazy guest address resolution for IPv6. !81
+ - Improve signal handling when spawning a child. !61
+ - Set macOS deployment target to macOS 10.4. !72
+ - slirp_add_hostfwd: Ensure all error paths set errno. !80
+ - More API documentation.
 
 ### Fixed
+
+ - Assertion failure on unspecified IPv6 address. !86
+ - Disable polling for PRI on MacOS, fixing some closing streams issues. !73 
+ - Various memory leak fixes on fastq/batchq. !68
+ - Memory leak on IPv6 fast-send. !67
+ - Slow socket response on Windows. !64
+ - Misc build and code cleanups. !60 !63 !76 !79 !84
 
 ## [4.4.0] - 2020-12-02
 
@@ -134,7 +148,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Standalone project, removing any QEMU dependency.
  - License clarifications.
 
-[unreleased]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.4.0...master
+[unreleased]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.5.0...master
+[4.5.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.4.0...v4.5.0
 [4.4.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.3.1...v4.4.0
 [4.3.1]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.3.0...v4.3.1
 [4.3.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.2.0...v4.3.0
