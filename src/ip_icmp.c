@@ -245,7 +245,7 @@ void icmp_input(struct mbuf *m, int hlen)
 
     default:
         m_free(m);
-    } /* swith */
+    } /* switch */
 
 end_error:
     /* m is m_free()'d xor put in a socket xor or given to ip_send */

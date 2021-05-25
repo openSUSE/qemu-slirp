@@ -347,7 +347,7 @@ insert:
     /*
      * If the fragments concatenated to an mbuf that's bigger than the total
      * size of the fragment and the mbuf was not already using an m_ext buffer,
-     * then an m_ext buffer was alloced. But fp->ipq_next points to the old
+     * then an m_ext buffer was allocated. But fp->ipq_next points to the old
      * buffer (in the mbuf), so we must point ip into the new buffer.
      */
     if (m->m_flags & M_EXT) {
