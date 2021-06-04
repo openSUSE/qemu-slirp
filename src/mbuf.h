@@ -127,6 +127,7 @@ int m_copy(struct mbuf *, struct mbuf *, int, int);
 struct mbuf *m_dup(Slirp *slirp, struct mbuf *m, bool copy_header, size_t header_size);
 struct mbuf *dtom(Slirp *, void *);
 void *mtod_check(struct mbuf *, size_t len);
+void *m_end(struct mbuf *);
 
 static inline void ifs_init(struct mbuf *ifm)
 {
