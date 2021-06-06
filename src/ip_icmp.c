@@ -95,6 +95,7 @@ static int icmp_send(struct socket *so, struct mbuf *m, int hlen)
     if (so->s == -1) {
         return -1;
     }
+    so->slirp->cb->register_poll_fd(so->s, so->slirp->opaque);
 
     if (slirp_bind_outbound(so, AF_INET) != 0) {
         // bind failed - close socket

@@ -328,6 +328,7 @@ int udp_attach(struct socket *so, unsigned short af)
         so->so_expire = curtime + SO_EXPIRE;
         insque(so, &so->slirp->udb);
     }
+    so->slirp->cb->register_poll_fd(so->s, so->slirp->opaque);
     return (so->s);
 }
 
