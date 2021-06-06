@@ -185,8 +185,13 @@ void icmp_input(struct mbuf *m, int hlen)
 
             so = socreate(slirp);
             if (icmp_send(so, m, hlen) == 0) {
+                /* We could send this as ICMP, good! */
                 return;
             }
+
+            /* We could not send this as ICMP, try to send it on UDP echo
+             * service (7), wishfully hoping that it is open there. */
+
             if (udp_attach(so, AF_INET) == -1) {
                 DEBUG_MISC("icmp_input udp_attach errno = %d-%s", errno,
                            strerror(errno));
