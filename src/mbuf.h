@@ -182,6 +182,7 @@ static inline void ifs_init(struct mbuf *ifm)
         m_free(m); \
         (m) = __n; \
     } else { \
+        (void) (slirp); (void) (copy_header); \
         g_assert(M_ROOMBEFORE(m) >= (header_size)); \
     } \
 } while(0)
