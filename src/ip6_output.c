@@ -15,6 +15,9 @@
  */
 int ip6_output(struct socket *so, struct mbuf *m, int fast)
 {
+    Slirp *slirp = m->slirp;
+    M_DUP_DEBUG(slirp, m, 0, 0);
+
     struct ip6 *ip = mtod(m, struct ip6 *);
 
     DEBUG_CALL("ip6_output");

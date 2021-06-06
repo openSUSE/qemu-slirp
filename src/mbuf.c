@@ -69,10 +69,10 @@ struct mbuf *m_get(Slirp *slirp)
 
     DEBUG_CALL("m_get");
 
-    if (slirp->m_freelist.qh_link == &slirp->m_freelist) {
+    if (MBUF_DEBUG || slirp->m_freelist.qh_link == &slirp->m_freelist) {
         m = g_malloc(SLIRP_MSIZE(slirp->if_mtu));
         slirp->mbuf_alloced++;
-        if (slirp->mbuf_alloced > MBUF_THRESH)
+        if (MBUF_DEBUG || slirp->mbuf_alloced > MBUF_THRESH)
             flags = M_DOFREE;
         m->slirp = slirp;
     } else {
@@ -226,4 +226,40 @@ struct mbuf *dtom(Slirp *slirp, void *dat)
     DEBUG_ERROR("dtom failed");
 
     return (struct mbuf *)0;
+}
+
+/*
+ * Duplicate the mbuf
+ *
+ * copy_header specifies whether the bytes before m_data should also be copied.
+ * header_size specifies how many bytes are to be reserved before m_data.
+ */
+struct mbuf *m_dup(Slirp *slirp, struct mbuf *m,
+                   bool copy_header,
+                   size_t header_size)
+{
+    struct mbuf *n;
+    int mcopy_result;
+
+    /* The previous mbuf was supposed to have it already, we can check it along
+     * the way */
+    assert(M_ROOMBEFORE(m) >= header_size);
+
+    n = m_get(slirp);
+    m_inc(n, m->m_len + header_size);
+
+    if (copy_header) {
+        m->m_len += header_size;
+        m->m_data -= header_size;
+        mcopy_result = m_copy(n, m, 0, m->m_len + header_size);
+        n->m_data += header_size;
+        m->m_len -= header_size;
+        m->m_data += header_size;
+    } else {
+        n->m_data += header_size;
+        mcopy_result = m_copy(n, m, 0, m->m_len);
+    }
+    g_assert(mcopy_result == 0);
+
+    return n;
 }

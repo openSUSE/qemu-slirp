@@ -11,6 +11,8 @@
 void udp6_input(struct mbuf *m)
 {
     Slirp *slirp = m->slirp;
+    M_DUP_DEBUG(slirp, m, 0, 0);
+
     struct ip6 *ip, save_ip;
     struct udphdr *uh;
     int iphlen = sizeof(struct ip6);
@@ -153,6 +155,9 @@ bad:
 int udp6_output(struct socket *so, struct mbuf *m, struct sockaddr_in6 *saddr,
                 struct sockaddr_in6 *daddr)
 {
+    Slirp *slirp = m->slirp;
+    M_DUP_DEBUG(slirp, m, 0, sizeof(struct ip6) + sizeof(struct udphdr));
+
     struct ip6 *ip;
     struct udphdr *uh;
 

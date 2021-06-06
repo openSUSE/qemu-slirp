@@ -72,6 +72,10 @@ cargs = [
   '-DG_LOG_DOMAIN="Slirp"',
 ]
 
+if cc.check_header('valgrind/valgrind.h')
+  cargs += [ '-DHAVE_VALGRIND=1' ]
+endif
+
 sources = [
   'src/arp_table.c',
   'src/bootp.c',

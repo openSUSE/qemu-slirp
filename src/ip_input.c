@@ -70,6 +70,8 @@ void ip_cleanup(Slirp *slirp)
 void ip_input(struct mbuf *m)
 {
     Slirp *slirp = m->slirp;
+    M_DUP_DEBUG(slirp, m, 0, TCPIPHDR_DELTA);
+
     register struct ip *ip;
     int hlen;
 
