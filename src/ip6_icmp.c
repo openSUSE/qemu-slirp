@@ -385,12 +385,12 @@ static void ndp_input(struct mbuf *m, Slirp *slirp, struct ip6 *ip,
  */
 void icmp6_input(struct mbuf *m)
 {
+    Slirp *slirp = m->slirp;
     /* NDP reads the ethernet header for gratuitous NDP */
-    g_assert(M_ROOMBEFORE(m) >= ETH_HLEN);
+    M_DUP_DEBUG(slirp, m, 1, ETH_HLEN);
 
     struct icmp6 *icmp;
     struct ip6 *ip = mtod(m, struct ip6 *);
-    Slirp *slirp = m->slirp;
     int hlen = sizeof(struct ip6);
 
     DEBUG_CALL("icmp6_input");

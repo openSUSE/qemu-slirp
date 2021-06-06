@@ -85,6 +85,9 @@ void icmp_cleanup(Slirp *slirp)
 
 static int icmp_send(struct socket *so, struct mbuf *m, int hlen)
 {
+    Slirp *slirp = m->slirp;
+    M_DUP_DEBUG(slirp, m, 0, 0);
+
     struct ip *ip = mtod(m, struct ip *);
     struct sockaddr_in addr;
 
@@ -136,10 +139,12 @@ void icmp_detach(struct socket *so)
  */
 void icmp_input(struct mbuf *m, int hlen)
 {
+    Slirp *slirp = m->slirp;
+    M_DUP_DEBUG(slirp, m, 0, 0);
+
     register struct icmp *icp;
     register struct ip *ip = mtod(m, struct ip *);
     int icmplen = ip->ip_len;
-    Slirp *slirp = m->slirp;
 
     DEBUG_CALL("icmp_input");
     DEBUG_ARG("m = %p", m);

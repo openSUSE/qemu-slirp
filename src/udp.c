@@ -67,6 +67,8 @@ void udp_cleanup(Slirp *slirp)
 void udp_input(register struct mbuf *m, int iphlen)
 {
     Slirp *slirp = m->slirp;
+    M_DUP_DEBUG(slirp, m, 0, 0);
+
     register struct ip *ip;
     register struct udphdr *uh;
     int len;
@@ -245,7 +247,8 @@ bad:
 int udp_output(struct socket *so, struct mbuf *m, struct sockaddr_in *saddr,
                struct sockaddr_in *daddr, int iptos)
 {
-    g_assert(M_ROOMBEFORE(m) >= sizeof(struct udpiphdr));
+    Slirp *slirp = m->slirp;
+    M_DUP_DEBUG(slirp, m, 0, sizeof(struct udpiphdr));
 
     register struct udpiphdr *ui;
     int error = 0;

@@ -82,6 +82,9 @@ static void tcp_xmit_timer(register struct tcpcb *tp, int rtt);
 static int tcp_reass(register struct tcpcb *tp, register struct tcpiphdr *ti,
                      struct mbuf *m)
 {
+    if (m)
+        M_DUP_DEBUG(m->slirp, m, 0, 0);
+
     register struct tcpiphdr *q;
     struct socket *so = tp->t_socket;
     int flags;
@@ -235,11 +238,11 @@ void tcp_input(struct mbuf *m, int iphlen, struct socket *inso,
     slirp = m->slirp;
     switch (af) {
     case AF_INET:
-        g_assert(M_ROOMBEFORE(m) >=
+        M_DUP_DEBUG(slirp, m, 0,
             sizeof(struct tcpiphdr) - sizeof(struct ip) - sizeof(struct tcphdr));
         break;
     case AF_INET6:
-        g_assert(M_ROOMBEFORE(m) >=
+        M_DUP_DEBUG(slirp, m, 0,
             sizeof(struct tcpiphdr) - sizeof(struct ip6) - sizeof(struct tcphdr));
         break;
     }
