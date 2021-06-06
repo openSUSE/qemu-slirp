@@ -141,6 +141,14 @@ lib = library('slirp', sources,
   install : install_devel or get_option('default_library') == 'shared',
 )
 
+pingtest = executable('pingtest', 'test/pingtest.c',
+  link_with: [ lib ],
+  include_directories: [ 'src' ],
+  dependencies : [ platform_deps ]
+)
+
+test('ping', pingtest)
+
 if install_devel
   install_headers(['src/libslirp.h'], subdir : 'slirp')
 
