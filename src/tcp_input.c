@@ -233,6 +233,16 @@ void tcp_input(struct mbuf *m, int iphlen, struct socket *inso,
         goto cont_conn;
     }
     slirp = m->slirp;
+    switch (af) {
+    case AF_INET:
+        g_assert(M_ROOMBEFORE(m) >=
+            sizeof(struct tcpiphdr) - sizeof(struct ip) - sizeof(struct tcphdr));
+        break;
+    case AF_INET6:
+        g_assert(M_ROOMBEFORE(m) >=
+            sizeof(struct tcpiphdr) - sizeof(struct ip6) - sizeof(struct tcphdr));
+        break;
+    }
 
     ip = mtod(m, struct ip *);
     ip6 = mtod(m, struct ip6 *);

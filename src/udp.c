@@ -245,6 +245,8 @@ bad:
 int udp_output(struct socket *so, struct mbuf *m, struct sockaddr_in *saddr,
                struct sockaddr_in *daddr, int iptos)
 {
+    g_assert(M_ROOMBEFORE(m) >= sizeof(struct udpiphdr));
+
     register struct udpiphdr *ui;
     int error = 0;
 

@@ -153,6 +153,8 @@ bad:
 int udp6_output(struct socket *so, struct mbuf *m, struct sockaddr_in6 *saddr,
                 struct sockaddr_in6 *daddr)
 {
+    g_assert(M_ROOMBEFORE(m) >= sizeof(struct ip6) + sizeof(struct udphdr));
+
     struct ip6 *ip;
     struct udphdr *uh;
 

@@ -73,6 +73,13 @@
  */
 #define M_FREEROOM(m) (M_ROOM(m) - (m)->m_len)
 
+/*
+ * How much free room there is before m_data
+ */
+#define M_ROOMBEFORE(m) \
+    (((m)->m_flags & M_EXT) ? (m)->m_data - (m)->m_ext \
+                            : (m)->m_data - (m)->m_dat)
+
 struct mbuf {
     /* XXX should union some of these! */
     /* header at beginning of each mbuf: */

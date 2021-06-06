@@ -25,6 +25,8 @@ void ip6_input(struct mbuf *m)
 {
     struct ip6 *ip6;
     Slirp *slirp = m->slirp;
+    /* NDP reads the ethernet header for gratuitous NDP */
+    g_assert(M_ROOMBEFORE(m) >= TCPIPHDR_DELTA + 2 + ETH_HLEN);
 
     if (!slirp->in6_enabled) {
         goto bad;

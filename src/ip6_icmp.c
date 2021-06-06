@@ -321,6 +321,8 @@ static void ndp_send_na(Slirp *slirp, struct ip6 *ip, struct icmp6 *icmp)
 static void ndp_input(struct mbuf *m, Slirp *slirp, struct ip6 *ip,
                       struct icmp6 *icmp)
 {
+    g_assert(M_ROOMBEFORE(m) >= ETH_HLEN);
+
     m->m_len += ETH_HLEN;
     m->m_data -= ETH_HLEN;
     struct ethhdr *eth = mtod(m, struct ethhdr *);
@@ -383,6 +385,9 @@ static void ndp_input(struct mbuf *m, Slirp *slirp, struct ip6 *ip,
  */
 void icmp6_input(struct mbuf *m)
 {
+    /* NDP reads the ethernet header for gratuitous NDP */
+    g_assert(M_ROOMBEFORE(m) >= ETH_HLEN);
+
     struct icmp6 *icmp;
     struct ip6 *ip = mtod(m, struct ip6 *);
     Slirp *slirp = m->slirp;
