@@ -117,11 +117,6 @@ if cc.has_link_argument(vflag_test)
   vflag += vflag_test
 endif
 
-if host_system == 'darwin'
-  cargs += '-mmacosx-version-min=10.4'
-  vflag += '-mmacosx-version-min=10.4'
-endif
-
 install_devel = not meson.is_subproject()
 
 configure_file(
