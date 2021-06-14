@@ -1,5 +1,5 @@
 project('libslirp', 'c',
-  version : '4.5.0',
+  version : '4.6.0',
   license : 'BSD-3-Clause',
   default_options : ['warning_level=1', 'c_std=gnu99'],
   meson_version : '>= 0.50',
