@@ -5,15 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.6.0] - 2021-06-14
 
 ### Added
 
+ - mbuf: Add debugging helpers for allocation. !90
+
 ### Changed
 
-### Deprecated
+ -  Revert "Set macOS deployment target to macOS 10.4". !93
 
 ### Fixed
+
+ - mtod()-related buffer overflows (CVE-2021-3592 #44, CVE-2021-3593 #45,
+   CVE-2021-3594 #47, CVE-2021-3595 #46).
+ - poll_fd: add missing fd registration for UDP and ICMP
+ - ncsi: make ncsi_calculate_checksum work with unaligned data. !89
+ - Various typos and doc fixes. !88
 
 ## [4.5.0] - 2021-05-18
 
@@ -158,7 +166,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Standalone project, removing any QEMU dependency.
  - License clarifications.
 
-[Unreleased]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.5.0...master
+[Unreleased]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.6.0...master
+[4.6.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.5.0...v4.6.0
 [4.5.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.4.0...v4.5.0
 [4.4.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.3.1...v4.4.0
 [4.3.1]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.3.0...v4.3.1
