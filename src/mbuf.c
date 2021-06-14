@@ -263,3 +263,19 @@ struct mbuf *m_dup(Slirp *slirp, struct mbuf *m,
 
     return n;
 }
+
+void *mtod_check(struct mbuf *m, size_t len)
+{
+    if (m->m_len >= len) {
+        return m->m_data;
+    }
+
+    DEBUG_ERROR("mtod failed");
+
+    return NULL;
+}
+
+void *m_end(struct mbuf *m)
+{
+    return m->m_data + m->m_len;
+}
