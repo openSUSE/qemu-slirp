@@ -359,7 +359,9 @@ static void bootp_reply(Slirp *slirp,
 
     daddr.sin_addr.s_addr = 0xffffffffu;
 
-    m->m_len = sizeof(struct bootp_t) - sizeof(struct ip) - sizeof(struct udphdr);
+    assert ((q - rbp->bp_vend + 1) <= DHCP_OPT_LEN);
+
+    m->m_len = sizeof(struct bootp_t) + (q - rbp->bp_vend + 1) - sizeof(struct ip) - sizeof(struct udphdr);
     udp_output(NULL, m, &saddr, &daddr, IPTOS_LOWDELAY);
 }
 
