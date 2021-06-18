@@ -1,5 +1,5 @@
 project('libslirp', 'c',
-  version : '4.6.0',
+  version : '4.6.1',
   license : 'BSD-3-Clause',
   default_options : ['warning_level=1', 'c_std=gnu99'],
   meson_version : '>= 0.50',
@@ -45,7 +45,7 @@ conf.set_quoted('SLIRP_VERSION_STRING', full_version + get_option('version_suffi
 #   fixed, change:
 #      REVISION += 1
 lt_current = 3
-lt_revision = 0
+lt_revision = 1
 lt_age = 3
 lt_version = '@0@.@1@.@2@'.format(lt_current - lt_age, lt_age, lt_revision)
 
