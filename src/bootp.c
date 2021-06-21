@@ -355,13 +355,13 @@ static void bootp_reply(Slirp *slirp,
         q += sizeof(nak_msg) - 1;
     }
     assert(q < end);
-    *q = RFC1533_END;
+    *q++ = RFC1533_END;
 
     daddr.sin_addr.s_addr = 0xffffffffu;
 
-    assert ((q - rbp->bp_vend + 1) <= DHCP_OPT_LEN);
+    assert(q <= end);
 
-    m->m_len = sizeof(struct bootp_t) + (q - rbp->bp_vend + 1) - sizeof(struct ip) - sizeof(struct udphdr);
+    m->m_len = sizeof(struct bootp_t) + (end - rbp->bp_vend) - sizeof(struct ip) - sizeof(struct udphdr);
     udp_output(NULL, m, &saddr, &daddr, IPTOS_LOWDELAY);
 }
 
