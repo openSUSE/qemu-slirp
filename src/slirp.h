@@ -20,9 +20,7 @@
 #include <iphlpapi.h>
 
 #else
-#if !defined(__HAIKU__)
 #define O_BINARY 0
-#endif
 #endif
 
 #ifndef _WIN32
