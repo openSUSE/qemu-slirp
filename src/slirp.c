@@ -218,6 +218,12 @@ int get_dns6_addr(struct in6_addr *pdns6_addr, uint32_t *scope_id)
 
 #else // !defined(_WIN32) && !defined(__APPLE__)
 
+#if defined(__HAIKU__)
+#define RESOLV_CONF_PATH "/boot/system/settings/network/resolv.conf"
+#else
+#define RESOLV_CONF_PATH "/etc/resolv.conf"
+#endif
+
 static int get_dns_addr_cached(void *pdns_addr, void *cached_addr,
                                socklen_t addrlen, struct stat *cached_stat,
                                unsigned *cached_time)
@@ -228,7 +234,7 @@ static int get_dns_addr_cached(void *pdns_addr, void *cached_addr,
         return 0;
     }
     old_stat = *cached_stat;
-    if (stat("/etc/resolv.conf", cached_stat) != 0) {
+    if (stat(RESOLV_CONF_PATH, cached_stat) != 0) {
         return -1;
     }
     if (cached_stat->st_dev == old_stat.st_dev &&
@@ -256,7 +262,7 @@ static int get_dns_addr_resolv_conf(int af, void *pdns_addr, void *cached_addr,
     unsigned if_index;
 
     assert(sizeof(tmp_addr) >= addrlen);
-    f = fopen("/etc/resolv.conf", "r");
+    f = fopen(RESOLV_CONF_PATH, "r");
     if (!f)
         return -1;
 
