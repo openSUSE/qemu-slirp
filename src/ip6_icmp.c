@@ -10,16 +10,7 @@
 #define NDP_Interval \
     g_rand_int_range(slirp->grand, NDP_MinRtrAdvInterval, NDP_MaxRtrAdvInterval)
 
-static void ra_timer_handler(void *opaque)
-{
-    Slirp *slirp = opaque;
-
-    slirp->cb->timer_mod(slirp->ra_timer,
-                         slirp->cb->clock_get_ns(slirp->opaque) / SCALE_MS +
-                             NDP_Interval,
-                         slirp->opaque);
-    ndp_send_ra(slirp);
-}
+static void ra_timer_handler(void *opaque);
 
 void icmp6_init(Slirp *slirp)
 {
@@ -140,7 +131,7 @@ void icmp6_send_error(struct mbuf *m, uint8_t type, uint8_t code)
 /*
  * Send NDP Router Advertisement
  */
-void ndp_send_ra(Slirp *slirp)
+static void ndp_send_ra(Slirp *slirp)
 {
     DEBUG_CALL("ndp_send_ra");
 
@@ -217,6 +208,17 @@ void ndp_send_ra(Slirp *slirp)
     ricmp->icmp6_cksum = ip6_cksum(t);
 
     ip6_output(NULL, t, 0);
+}
+
+static void ra_timer_handler(void *opaque)
+{
+    Slirp *slirp = opaque;
+
+    slirp->cb->timer_mod(slirp->ra_timer,
+                         slirp->cb->clock_get_ns(slirp->opaque) / SCALE_MS +
+                             NDP_Interval,
+                         slirp->opaque);
+    ndp_send_ra(slirp);
 }
 
 /*
