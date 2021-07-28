@@ -10,8 +10,6 @@
 #define NDP_Interval \
     g_rand_int_range(slirp->grand, NDP_MinRtrAdvInterval, NDP_MaxRtrAdvInterval)
 
-static void ra_timer_handler(void *opaque);
-
 void icmp6_init(Slirp *slirp)
 {
     if (!slirp->in6_enabled) {
@@ -19,7 +17,7 @@ void icmp6_init(Slirp *slirp)
     }
 
     slirp->ra_timer =
-        slirp->cb->timer_new(ra_timer_handler, slirp, slirp->opaque);
+        slirp_timer_new(slirp, SLIRP_TIMER_RA, NULL);
     slirp->cb->timer_mod(slirp->ra_timer,
                          slirp->cb->clock_get_ns(slirp->opaque) / SCALE_MS +
                              NDP_Interval,
@@ -210,10 +208,8 @@ static void ndp_send_ra(Slirp *slirp)
     ip6_output(NULL, t, 0);
 }
 
-static void ra_timer_handler(void *opaque)
+void ra_timer_handler(Slirp *slirp, void *unused)
 {
-    Slirp *slirp = opaque;
-
     slirp->cb->timer_mod(slirp->ra_timer,
                          slirp->cb->clock_get_ns(slirp->opaque) / SCALE_MS +
                              NDP_Interval,

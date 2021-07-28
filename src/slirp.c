@@ -528,6 +528,27 @@ static void slirp_init_once(void)
     }
 }
 
+static void ra_timer_handler_cb(void *opaque)
+{
+    Slirp *slirp = opaque;
+
+    return ra_timer_handler(slirp, NULL);
+}
+
+void *slirp_timer_new(Slirp *slirp, SlirpTimerId id, void *cb_opaque)
+{
+    g_return_val_if_fail(id >= 0 && id < SLIRP_TIMER_NUM, NULL);
+
+    switch (id) {
+    case SLIRP_TIMER_RA:
+        g_return_val_if_fail(cb_opaque == NULL, NULL);
+        return slirp->cb->timer_new(ra_timer_handler_cb, slirp, slirp->opaque);
+
+    default:
+	abort();
+    }
+}
+
 Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
 {
     Slirp *slirp;

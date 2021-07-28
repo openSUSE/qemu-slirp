@@ -39,6 +39,11 @@ typedef void (*SlirpTimerCb)(void *opaque);
 typedef int (*SlirpAddPollCb)(int fd, int events, void *opaque);
 typedef int (*SlirpGetREventsCb)(int idx, void *opaque);
 
+typedef enum SlirpTimerId {
+    SLIRP_TIMER_RA,
+    SLIRP_TIMER_NUM,
+} SlirpTimerId;
+
 /*
  * Callbacks from slirp, to be set by the application.
  *

@@ -280,5 +280,6 @@ struct socket *slirp_find_ctl_socket(Slirp *slirp, struct in_addr guest_addr,
                                      int guest_port);
 
 void slirp_send_packet_all(Slirp *slirp, const void *buf, size_t len);
+void *slirp_timer_new(Slirp *slirp, SlirpTimerId id, void *cb_opaque);
 
 #endif

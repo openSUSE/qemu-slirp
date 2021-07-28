@@ -215,5 +215,6 @@ void icmp6_input(struct mbuf *);
 void icmp6_forward_error(struct mbuf *m, uint8_t type, uint8_t code, struct in6_addr *src);
 void icmp6_send_error(struct mbuf *m, uint8_t type, uint8_t code);
 void ndp_send_ns(Slirp *slirp, struct in6_addr addr);
+void ra_timer_handler(Slirp *slirp, void *unused);
 
 #endif
