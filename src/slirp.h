@@ -120,6 +120,8 @@ bool ndp_table_search(Slirp *slirp, struct in6_addr ip_addr,
                       uint8_t out_ethaddr[ETH_ALEN]);
 
 struct Slirp {
+    int cfg_version;
+
     unsigned time_fasttimo;
     unsigned last_slowtimo;
     bool do_slowtimo;
