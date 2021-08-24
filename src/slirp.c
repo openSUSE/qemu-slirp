@@ -182,7 +182,7 @@ static int get_dns_addr_libresolv(int af, void *pdns_addr, void *cached_addr,
         }
     }
 
-    res_nclose(&state);
+    res_ndestroy(&state);
     if (!found)
         return -1;
     return 0;
