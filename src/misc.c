@@ -82,7 +82,7 @@ static int slirp_socketpair_with_oob(int sv[2])
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
         .sin_port = 0,
-        .sin_addr.s_addr = INADDR_ANY,
+        .sin_addr.s_addr = htonl(INADDR_LOOPBACK),
     };
     socklen_t addrlen = sizeof(addr);
     int ret, s;
