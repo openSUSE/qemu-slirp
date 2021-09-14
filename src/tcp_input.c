@@ -218,6 +218,9 @@ void tcp_input(struct mbuf *m, int iphlen, struct socket *inso,
     DEBUG_CALL("tcp_input");
     DEBUG_ARG("m = %p  iphlen = %2d  inso = %p", m, iphlen, inso);
 
+    memset(&lhost, 0, sizeof(struct sockaddr_storage));
+    memset(&fhost, 0, sizeof(struct sockaddr_storage));
+
     /*
      * If called with m == 0, then we're continuing the connect
      */
