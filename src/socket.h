@@ -6,6 +6,8 @@
 #ifndef SLIRP_SOCKET_H
 #define SLIRP_SOCKET_H
 
+#include <string.h>
+
 #include "misc.h"
 #include "sbuf.h"
 
@@ -22,6 +24,16 @@ typedef union in4or6_addr in4or6_addr;
 /*
  * Our socket structure
  */
+
+union slirp_sockaddr_host {
+    struct sockaddr sa;
+    struct sockaddr_storage ss;
+    struct sockaddr_in sin;
+    struct sockaddr_in6 sin6;
+#ifndef _WIN32
+    struct sockaddr_un sun;
+#endif
+};
 
 union slirp_sockaddr {
     struct sockaddr sa;
@@ -47,11 +59,12 @@ struct socket {
     struct tcpiphdr *so_ti; /* Pointer to the original ti within
                              * so_mconn, for non-blocking connections */
     uint32_t so_urgc;
-    union slirp_sockaddr fhost; /* Foreign host */
+    union slirp_sockaddr_host fhost; /* Foreign host */
 #define so_faddr fhost.sin.sin_addr
 #define so_fport fhost.sin.sin_port
 #define so_faddr6 fhost.sin6.sin6_addr
 #define so_fport6 fhost.sin6.sin6_port
+#define so_fpath fhost.sun.sun_path
 #define so_ffamily fhost.ss.ss_family
 
     union slirp_sockaddr lhost; /* Local host */
@@ -128,6 +141,13 @@ static inline int sockaddr_equal(const struct sockaddr_storage *a,
         return (in6_equal(&a6->sin6_addr, &b6->sin6_addr) &&
                 a6->sin6_port == b6->sin6_port);
     }
+#ifndef _WIN32
+    case AF_UNIX: {
+        const struct sockaddr_un *aun = (const struct sockaddr_un *)a;
+        const struct sockaddr_un *bun = (const struct sockaddr_un *)b;
+        return strncmp(aun->sun_path, bun->sun_path, sizeof(aun->sun_path)) == 0;
+    }
+#endif
     default:
         g_assert_not_reached();
     }
@@ -142,6 +162,10 @@ static inline socklen_t sockaddr_size(const struct sockaddr_storage *a)
         return sizeof(struct sockaddr_in);
     case AF_INET6:
         return sizeof(struct sockaddr_in6);
+#ifndef _WIN32
+    case AF_UNIX:
+        return sizeof(struct sockaddr_un);
+#endif
     default:
         g_assert_not_reached();
     }

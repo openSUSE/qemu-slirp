@@ -769,18 +769,6 @@ struct socket *tcpx_listen(Slirp *slirp,
     socklen_t addrlen;
 
     DEBUG_CALL("tcpx_listen");
-    /* AF_INET6 addresses are bigger than AF_INET, so this is big enough. */
-    char addrstr[INET6_ADDRSTRLEN];
-    char portstr[6];
-    int ret;
-    ret = getnameinfo(haddr, haddrlen, addrstr, sizeof(addrstr), portstr, sizeof(portstr), NI_NUMERICHOST|NI_NUMERICSERV);
-    g_assert(ret == 0);
-    DEBUG_ARG("haddr = %s", addrstr);
-    DEBUG_ARG("hport = %s", portstr);
-    ret = getnameinfo(laddr, laddrlen, addrstr, sizeof(addrstr), portstr, sizeof(portstr), NI_NUMERICHOST|NI_NUMERICSERV);
-    g_assert(ret == 0);
-    DEBUG_ARG("laddr = %s", addrstr);
-    DEBUG_ARG("lport = %s", portstr);
     DEBUG_ARG("flags = %x", flags);
 
     /*
@@ -1039,6 +1027,13 @@ void sotranslate_accept(struct socket *so)
             in6_equal(&so->so_faddr6, &in6addr_loopback)) {
             so->so_faddr6 = slirp->vhost_addr6;
         }
+        break;
+
+    case AF_UNIX:
+        /* Translate Unix socket to random ephemeral source port. */
+        so->so_ffamily = AF_INET;
+        so->so_faddr = slirp->vhost_addr;
+        so->so_fport = g_rand_int_range(slirp->grand, 49152, 65536);
         break;
 
     default:

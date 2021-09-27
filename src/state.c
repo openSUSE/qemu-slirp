@@ -273,7 +273,7 @@ static const VMStateDescription vmstate_slirp_socket = {
             VMSTATE_UINT16_TEST(so_lport, struct socket, slirp_older_than_v4),
             /* v4 and newer */
             VMSTATE_STRUCT(fhost, struct socket, 4, vmstate_slirp_socket_addr,
-                           union slirp_sockaddr),
+                           union slirp_sockaddr_host),
             VMSTATE_STRUCT(lhost, struct socket, 4, vmstate_slirp_socket_addr,
                            union slirp_sockaddr),
 
