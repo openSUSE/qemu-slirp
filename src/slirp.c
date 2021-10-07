@@ -143,6 +143,10 @@ static int get_dns_addr_libresolv(int af, void *pdns_addr, void *cached_addr,
     union res_sockaddr_union servers[NI_MAXSERV];
     int count;
     int found;
+    void *addr;
+
+    // we only support IPv4 and IPv4, we assume it's one or the other
+    assert(af == AF_INET || af == AF_INET6);
 
     if (res_ninit(&state) != 0) {
         return -1;
@@ -155,11 +159,16 @@ static int get_dns_addr_libresolv(int af, void *pdns_addr, void *cached_addr,
         if (af == servers[i].sin.sin_family) {
             found++;
         }
+        if (af == AF_INET) {
+            addr = &servers[i].sin.sin_addr;
+        } else { // af == AF_INET6
+            addr = &servers[i].sin6.sin6_addr;
+        }
 
         // we use the first found entry
         if (found == 1) {
-            memcpy(pdns_addr, &servers[i].sin.sin_addr, addrlen);
-            memcpy(cached_addr, &servers[i].sin.sin_addr, addrlen);
+            memcpy(pdns_addr, addr, addrlen);
+            memcpy(cached_addr, addr, addrlen);
             if (scope_id) {
                 *scope_id = 0;
             }
@@ -171,10 +180,7 @@ static int get_dns_addr_libresolv(int af, void *pdns_addr, void *cached_addr,
             break;
         } else if (slirp_debug & DBG_MISC) {
             char s[INET6_ADDRSTRLEN];
-            const char *res = inet_ntop(servers[i].sin.sin_family,
-                                        &servers[i].sin.sin_addr,
-                                        s,
-                                        sizeof(s));
+            const char *res = inet_ntop(af, addr, s, sizeof(s));
             if (!res) {
                 res = "  (string conversion error)";
             }
