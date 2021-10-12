@@ -8,6 +8,10 @@
 
 #include <string.h>
 
+#ifndef _WIN32
+#include <sys/un.h>
+#endif
+
 #include "misc.h"
 #include "sbuf.h"
 

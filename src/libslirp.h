@@ -13,7 +13,6 @@
 #else
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/un.h>
 #endif
 
 #include "libslirp-version.h"
