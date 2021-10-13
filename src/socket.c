@@ -1064,9 +1064,17 @@ void sotranslate_accept(struct socket *so)
 
     case AF_UNIX:
         /* Translate Unix socket to random ephemeral source port. */
-        so->so_ffamily = AF_INET;
-        so->so_faddr = slirp->vhost_addr;
-        so->so_fport = g_rand_int_range(slirp->grand, 49152, 65536);
+        if (so->slirp->in_enabled) {
+            so->so_ffamily = AF_INET;
+            so->so_faddr = slirp->vhost_addr;
+            so->so_fport = g_rand_int_range(slirp->grand, 49152, 65536);
+        } else if (so->slirp->in6_enabled) {
+            so->so_ffamily = AF_INET6;
+            so->so_faddr6 = slirp->vhost_addr6;
+            so->so_fport6 = g_rand_int_range(slirp->grand, 49152, 65536);
+        } else {
+            g_assert_not_reached();
+        }
         break;
 
     default:
