@@ -769,6 +769,39 @@ struct socket *tcpx_listen(Slirp *slirp,
     socklen_t addrlen;
 
     DEBUG_CALL("tcpx_listen");
+    /* AF_INET6 addresses are bigger than AF_INET, so this is big enough. */
+    char addrstr[INET6_ADDRSTRLEN];
+    char portstr[6];
+    int ret;
+    switch (haddr->sa_family) {
+    case AF_INET:
+    case AF_INET6:
+        ret = getnameinfo(haddr, haddrlen, addrstr, sizeof(addrstr), portstr, sizeof(portstr), NI_NUMERICHOST|NI_NUMERICSERV);
+        g_assert(ret == 0);
+        DEBUG_ARG("hfamily = INET");
+        DEBUG_ARG("haddr = %s", addrstr);
+        DEBUG_ARG("hport = %s", portstr);
+        break;
+#ifndef _WIN32
+    case AF_UNIX:
+        DEBUG_ARG("hfamily = UNIX");
+        DEBUG_ARG("hpath = %s", ((struct sockaddr_un *) haddr)->sun_path);
+        break;
+#endif
+    default:
+        g_assert_not_reached();
+    }
+    switch (laddr->sa_family) {
+    case AF_INET:
+    case AF_INET6:
+        ret = getnameinfo(laddr, laddrlen, addrstr, sizeof(addrstr), portstr, sizeof(portstr), NI_NUMERICHOST|NI_NUMERICSERV);
+        g_assert(ret == 0);
+        DEBUG_ARG("laddr = %s", addrstr);
+        DEBUG_ARG("lport = %s", portstr);
+        break;
+    default:
+        g_assert_not_reached();
+    }
     DEBUG_ARG("flags = %x", flags);
 
     /*
