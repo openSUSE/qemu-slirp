@@ -68,7 +68,8 @@ typedef struct SlirpCb {
     void (*register_poll_fd)(int fd, void *opaque);
     /* Unregister a fd */
     void (*unregister_poll_fd)(int fd, void *opaque);
-    /* Kick the io-thread, to signal that new events may be processed */
+    /* Kick the io-thread, to signal that new events may be processed because some TCP buffer
+     * can now receive more data, i.e. slirp_socket_can_recv will return 1. */
     void (*notify)(void *opaque);
 } SlirpCb;
 

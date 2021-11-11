@@ -613,7 +613,10 @@ void slirp_pollfds_fill(Slirp *slirp, uint32_t *timeout,
 
         /*
          * Set for reading (and urgent data) if we are connected, can
-         * receive more, and we have room for it XXX /2 ?
+         * receive more, and we have room for it.
+         *
+         * If sb is already half full, we will wait for the guest to consume it,
+         * and notify again in sbdrop() when the sb becomes less than half full.
          */
         if (CONN_CANFRCV(so) &&
             (so->so_snd.sb_cc < (so->so_snd.sb_datalen / 2))) {
@@ -1359,6 +1362,8 @@ size_t slirp_socket_can_recv(Slirp *slirp, struct in_addr guest_addr,
     }
 
     if (!CONN_CANFRCV(so) || so->so_snd.sb_cc >= (so->so_snd.sb_datalen / 2)) {
+        /* If the sb is already half full, we will wait for the guest to consume it,
+         * and notify again in sbdrop() when the sb becomes less than half full. */
         return 0;
     }
 
