@@ -139,6 +139,7 @@ struct Slirp {
     struct in6_addr vprefix_addr6;
     uint8_t vprefix_len;
     struct in6_addr vhost_addr6;
+    bool disable_dhcp; /* slirp will not reply to any DHCP requests */
     struct in_addr vdhcp_startaddr;
     struct in_addr vnameserver_addr;
     struct in6_addr vnameserver_addr6;

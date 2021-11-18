@@ -457,6 +457,12 @@ Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
         slirp->disable_dns = false;
     }
 
+    if (cfg->version >= 4) {
+        slirp->disable_dhcp = cfg->disable_dhcp;
+    } else {
+        slirp->disable_dhcp = false;
+    }
+
     return slirp;
 }
 
