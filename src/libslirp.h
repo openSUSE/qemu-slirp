@@ -74,7 +74,7 @@ typedef struct SlirpCb {
 } SlirpCb;
 
 #define SLIRP_CONFIG_VERSION_MIN 1
-#define SLIRP_CONFIG_VERSION_MAX 3
+#define SLIRP_CONFIG_VERSION_MAX 4
 
 typedef struct SlirpConfig {
     /* Version must be provided */
@@ -120,6 +120,10 @@ typedef struct SlirpConfig {
      * Fields introduced in SlirpConfig version 3 begin
      */
     bool disable_dns;  /* slirp will not redirect/serve any DNS packet */
+    /*
+     * Fields introduced in SlirpConfig version 4 begin
+     */
+    bool disable_dhcp; /* slirp will not reply to any DHCP requests */
 } SlirpConfig;
 
 /* Create a new instance of a slirp stack */
