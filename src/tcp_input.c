@@ -551,7 +551,7 @@ findso:
             /*
              * If this is a short packet, then ACK now - with Nagel
              *	congestion avoidance sender won't send more until
-             *	he gets an ACK.
+             *	they get an ACK.
              *
              * It is better to not delay acks at all to maximize
              * TCP throughput.  See RFC 2581.
@@ -1247,7 +1247,7 @@ dodata:
     /*
      * If this is a small packet, then ACK now - with Nagel
      *      congestion avoidance sender won't send more until
-     *      he gets an ACK.
+     *      they get an ACK.
      */
     if (ti->ti_len && (unsigned)ti->ti_len <= 5 &&
         ((struct tcpiphdr_2 *)ti)->first_char == (char)27) {
