@@ -62,7 +62,7 @@
  * and the window is too small to bother sending anything, then we start
  * the TCPT_PERSIST timer.  When it expires, if the window is nonzero,
  * we go to transmit state.  Otherwise, at intervals send a single byte
- * into the peer's window to force him to update our window information.
+ * into the peer's window to force them to update our window information.
  * We do this at most as often as TCPT_PERSMIN time intervals,
  * but no more frequently than the current estimate of round-trip
  * packet time.  The TCPT_PERSIST timer is cleared whenever we receive
