@@ -1062,20 +1062,89 @@ void sotranslate_accept(struct socket *so)
         }
         break;
 
-    case AF_UNIX:
-        /* Translate Unix socket to random ephemeral source port. */
+    case AF_UNIX: {
+        /* Translate Unix socket to random ephemeral source port. We obtain
+         * this source port by binding to port 0 so that the OS allocates a
+         * port for us. If this fails, we fall back to choosing a random port
+         * with a random number generator. */
+        int s;
+        struct sockaddr_in in_addr;
+        struct sockaddr_in6 in6_addr;
+        socklen_t in_addr_len;
+
         if (so->slirp->in_enabled) {
             so->so_ffamily = AF_INET;
             so->so_faddr = slirp->vhost_addr;
-            so->so_fport = g_rand_int_range(slirp->grand, 49152, 65536);
+            so->so_fport = 0;
+
+            // TODO Is there a better way of checking socket type?
+            s = slirp_socket(PF_INET, so->so_tcpcb ? SOCK_STREAM : SOCK_DGRAM, 0);
+            if (s < 0) {
+                g_error("Ephemeral slirp_socket() allocation failed");
+                goto unix2inet_cont;
+            }
+            memset(&in_addr, 0, sizeof(in_addr));
+            in_addr.sin_family = AF_INET;
+            in_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+            in_addr.sin_port = htons(0);
+            if (bind(s, (struct sockaddr *) &in_addr, sizeof(in_addr))) {
+                g_error("Ephemeral bind() failed");
+                closesocket(s);
+                goto unix2inet_cont;
+            }
+            in_addr_len = sizeof(in_addr);
+            if (getsockname(s, (struct sockaddr *) &in_addr, &in_addr_len)) {
+                g_error("Ephemeral getsockname() failed");
+                closesocket(s);
+                goto unix2inet_cont;
+            }
+            so->s = s;
+            so->so_fport = in_addr.sin_port;
+
+unix2inet_cont:
+            if (!so->so_fport) {
+                g_warning("Falling back to random port allocation");
+                so->so_fport = htons(g_rand_int_range(slirp->grand, 49152, 65536));
+            }
         } else if (so->slirp->in6_enabled) {
             so->so_ffamily = AF_INET6;
             so->so_faddr6 = slirp->vhost_addr6;
-            so->so_fport6 = g_rand_int_range(slirp->grand, 49152, 65536);
+            so->so_fport6 = 0;
+
+            // TODO Is there a better way of checking socket type?
+            s = slirp_socket(PF_INET6, so->so_tcpcb ? SOCK_STREAM : SOCK_DGRAM, 0);
+            if (s < 0) {
+                g_error("Ephemeral slirp_socket() allocation failed");
+                goto unix2inet6_cont;
+            }
+            memset(&in6_addr, 0, sizeof(in6_addr));
+            in6_addr.sin6_family = AF_INET6;
+            in6_addr.sin6_addr = in6addr_loopback;
+            in6_addr.sin6_port = htons(0);
+            if (bind(s, (struct sockaddr *) &in6_addr, sizeof(in6_addr))) {
+                g_error("Ephemeral bind() failed");
+                closesocket(s);
+                goto unix2inet6_cont;
+            }
+            in_addr_len = sizeof(in6_addr);
+            if (getsockname(s, (struct sockaddr *) &in6_addr, &in_addr_len)) {
+                g_error("Ephemeral getsockname() failed");
+                closesocket(s);
+                goto unix2inet6_cont;
+            }
+            so->s = s;
+            so->so_fport6 = in6_addr.sin6_port;
+
+unix2inet6_cont:
+            if (!so->so_fport6) {
+                g_warning("Falling back to random port allocation");
+                so->so_fport6 = htons(g_rand_int_range(slirp->grand, 49152, 65536));
+            }
         } else {
             g_assert_not_reached();
         }
         break;
+    } /* case AF_UNIX */
 
     default:
         break;
