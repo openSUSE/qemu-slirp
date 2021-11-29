@@ -95,7 +95,7 @@ void udp6_input(struct mbuf *m)
 
     if (so == NULL) {
         /* If there's no socket for this packet, create one. */
-        so = socreate(slirp);
+        so = socreate(slirp, IPPROTO_UDP);
         if (udp_attach(so, AF_INET6) == -1) {
             DEBUG_MISC(" udp6_attach errno = %d-%s", errno, strerror(errno));
             sofree(so);
