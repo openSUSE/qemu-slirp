@@ -40,6 +40,8 @@ struct socket {
     struct socket *so_next, *so_prev; /* For a linked list of sockets */
 
     int s; /* The actual socket */
+    int s_aux; /* An auxiliary socket for miscellaneous use. Currently used to
+                * reserve OS ports in UNIX-to-inet translation. */
     struct gfwd_list *guestfwd;
 
     int pollfds_idx; /* GPollFD GArray index */

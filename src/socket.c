@@ -50,6 +50,7 @@ struct socket *socreate(Slirp *slirp)
     memset(so, 0, sizeof(struct socket));
     so->so_state = SS_NOFDREF;
     so->s = -1;
+    so->s_aux = -1;
     so->slirp = slirp;
     so->pollfds_idx = -1;
 
@@ -1098,7 +1099,7 @@ void sotranslate_accept(struct socket *so)
                 closesocket(s);
                 goto unix2inet_cont;
             }
-            so->s = s;
+            so->s_aux = s;
             so->so_fport = in_addr.sin_port;
 
 unix2inet_cont:
@@ -1132,7 +1133,7 @@ unix2inet_cont:
                 closesocket(s);
                 goto unix2inet6_cont;
             }
-            so->s = s;
+            so->s_aux = s;
             so->so_fport6 = in6_addr.sin6_port;
 
 unix2inet6_cont:
