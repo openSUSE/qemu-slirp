@@ -207,7 +207,7 @@ void icmp_input(struct mbuf *m, int hlen)
             struct sockaddr_storage addr;
             int ttl;
 
-            so = socreate(slirp);
+            so = socreate(slirp, IPPROTO_ICMP);
             if (icmp_send(so, m, hlen) == 0) {
                 /* We could send this as ICMP, good! */
                 return;
@@ -231,7 +231,6 @@ void icmp_input(struct mbuf *m, int hlen)
             so->so_laddr = ip->ip_src;
             so->so_lport = htons(9);
             so->so_iptos = ip->ip_tos;
-            so->so_type = IPPROTO_ICMP;
             so->so_state = SS_ISFCONNECTED;
 
             /* Send the packet */

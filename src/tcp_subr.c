@@ -521,7 +521,7 @@ void tcp_connect(struct socket *inso)
         /* FACCEPTONCE already have a tcpcb */
         so = inso;
     } else {
-        so = socreate(slirp);
+        so = socreate(slirp, IPPROTO_TCP);
         tcp_attach(so);
         so->lhost = inso->lhost;
         so->so_ffamily = inso->so_ffamily;

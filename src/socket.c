@@ -43,11 +43,12 @@ struct socket *solookup(struct socket **last, struct socket *head,
  * It is the responsibility of the caller to
  * insque() it into the correct linked-list
  */
-struct socket *socreate(Slirp *slirp)
+struct socket *socreate(Slirp *slirp, int type)
 {
     struct socket *so = g_new(struct socket, 1);
 
     memset(so, 0, sizeof(struct socket));
+    so->so_type = type;
     so->so_state = SS_NOFDREF;
     so->s = -1;
     so->slirp = slirp;
@@ -792,7 +793,7 @@ struct socket *tcpx_listen(Slirp *slirp,
      */
     g_assert(!((flags & SS_HOSTFWD) && (flags & SS_FACCEPTONCE)));
 
-    so = socreate(slirp);
+    so = socreate(slirp, IPPROTO_TCP);
 
     /* Don't tcp_attach... we don't need so_snd nor so_rcv */
     so->so_tcpcb = tcp_newtcpcb(so);
