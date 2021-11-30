@@ -339,9 +339,6 @@ struct tcpcb *tcp_close(struct tcpcb *tp)
         slirp->tcp_last_so = &slirp->tcb;
     so->slirp->cb->unregister_poll_fd(so->s, so->slirp->opaque);
     closesocket(so->s);
-    if (so->s_aux != -1) {
-        closesocket(so->s_aux);
-    }
     sbfree(&so->so_rcv);
     sbfree(&so->so_snd);
     sofree(so);

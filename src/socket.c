@@ -84,6 +84,10 @@ void sofree(struct socket *so)
 {
     Slirp *slirp = so->slirp;
 
+    if (so->s_aux != -1) {
+        closesocket(so->s_aux);
+    }
+
     soqfree(so, &slirp->if_fastq);
     soqfree(so, &slirp->if_batchq);
 

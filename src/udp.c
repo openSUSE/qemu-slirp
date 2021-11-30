@@ -339,9 +339,6 @@ void udp_detach(struct socket *so)
 {
     so->slirp->cb->unregister_poll_fd(so->s, so->slirp->opaque);
     closesocket(so->s);
-    if (so->s_aux != -1) {
-        closesocket(so->s_aux);
-    }
     sofree(so);
 }
 
