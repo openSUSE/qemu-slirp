@@ -1080,7 +1080,17 @@ void sotranslate_accept(struct socket *so)
             so->so_fport = 0;
 
             // TODO Is there a better way of checking socket type?
-            s = slirp_socket(PF_INET, so->so_tcpcb ? SOCK_STREAM : SOCK_DGRAM, 0);
+            switch (so->so_type) {
+            case IPPROTO_TCP:
+                s = slirp_socket(PF_INET, SOCK_STREAM, 0);
+                break;
+            case IPPROTO_UDP:
+                s = slirp_socket(PF_INET, SOCK_DGRAM, 0);
+                break;
+            default:
+                g_assert_not_reached();
+                break;
+            }
             if (s < 0) {
                 g_error("Ephemeral slirp_socket() allocation failed");
                 goto unix2inet_cont;
@@ -1113,8 +1123,17 @@ unix2inet_cont:
             so->so_faddr6 = slirp->vhost_addr6;
             so->so_fport6 = 0;
 
-            // TODO Is there a better way of checking socket type?
-            s = slirp_socket(PF_INET6, so->so_tcpcb ? SOCK_STREAM : SOCK_DGRAM, 0);
+            switch (so->so_type) {
+            case IPPROTO_TCP:
+                s = slirp_socket(PF_INET6, SOCK_STREAM, 0);
+                break;
+            case IPPROTO_UDP:
+                s = slirp_socket(PF_INET6, SOCK_DGRAM, 0);
+                break;
+            default:
+                g_assert_not_reached();
+                break;
+            }
             if (s < 0) {
                 g_error("Ephemeral slirp_socket() allocation failed");
                 goto unix2inet6_cont;
