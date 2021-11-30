@@ -177,7 +177,7 @@ void udp_input(register struct mbuf *m, int iphlen)
          * If there's no socket for this packet,
          * create one
          */
-        so = socreate(slirp);
+        so = socreate(slirp, IPPROTO_UDP);
         if (udp_attach(so, AF_INET) == -1) {
             DEBUG_MISC(" udp_attach errno = %d-%s", errno, strerror(errno));
             sofree(so);
@@ -374,7 +374,7 @@ struct socket *udpx_listen(Slirp *slirp,
     socklen_t addrlen;
     int save_errno;
 
-    so = socreate(slirp);
+    so = socreate(slirp, IPPROTO_UDP);
     so->s = slirp_socket(haddr->sa_family, SOCK_DGRAM, 0);
     if (so->s < 0) {
         save_errno = errno;

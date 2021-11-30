@@ -68,12 +68,13 @@ typedef struct SlirpCb {
     void (*register_poll_fd)(int fd, void *opaque);
     /* Unregister a fd */
     void (*unregister_poll_fd)(int fd, void *opaque);
-    /* Kick the io-thread, to signal that new events may be processed */
+    /* Kick the io-thread, to signal that new events may be processed because some TCP buffer
+     * can now receive more data, i.e. slirp_socket_can_recv will return 1. */
     void (*notify)(void *opaque);
 } SlirpCb;
 
 #define SLIRP_CONFIG_VERSION_MIN 1
-#define SLIRP_CONFIG_VERSION_MAX 3
+#define SLIRP_CONFIG_VERSION_MAX 4
 
 typedef struct SlirpConfig {
     /* Version must be provided */
@@ -119,6 +120,10 @@ typedef struct SlirpConfig {
      * Fields introduced in SlirpConfig version 3 begin
      */
     bool disable_dns;  /* slirp will not redirect/serve any DNS packet */
+    /*
+     * Fields introduced in SlirpConfig version 4 begin
+     */
+    bool disable_dhcp; /* slirp will not reply to any DHCP requests */
 } SlirpConfig;
 
 /* Create a new instance of a slirp stack */

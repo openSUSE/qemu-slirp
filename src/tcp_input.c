@@ -423,7 +423,7 @@ findso:
         if ((tiflags & (TH_SYN | TH_FIN | TH_RST | TH_URG | TH_ACK)) != TH_SYN)
             goto dropwithreset;
 
-        so = socreate(slirp);
+        so = socreate(slirp, IPPROTO_TCP);
         tcp_attach(so);
 
         sbreserve(&so->so_snd, TCP_SNDSPACE);

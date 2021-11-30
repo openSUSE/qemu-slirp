@@ -41,3 +41,36 @@ Coverity:
     --form token=$COVERITY_SCAN_TOKEN --form email=$GITLAB_USER_EMAIL
     --form file=@cov-int.tar.gz --form version="`git describe --tags`"
     --form description="`git describe --tags` / $CI_COMMIT_TITLE / $CI_COMMIT_REF_NAME:$CI_PIPELINE_ID "
+
+integration-slirp4netns:
+  variables:
+    SLIRP4NETNS_VERSION: "v1.1.12"
+    # Consumed by `make benchmark`
+    BENCHMARK_IPERF3_DURATION: "10"
+  script:
+  # Install libslirp
+  - meson build
+  - ninja -C build install
+  # Register the path of libslirp.so.0
+  - echo /usr/local/lib64 >/etc/ld.so.conf.d/libslirp.conf
+  - ldconfig
+  # Install the dependencies of slirp4netns and its test suite
+  # TODO: install udhcpc for `slirp4netns/tests/test-slirp4netns-dhcp.sh` (currently skipped, due to lack of udhcpc)
+  - dnf install -y autoconf automake findutils iperf3 iproute iputils jq libcap-devel libseccomp-devel nmap-ncat util-linux
+  # Check whether the runner environment is configured correctly
+  - unshare -rn true || (echo Make sure you have relaxed seccomp and appamor && exit 1)
+  - unshare -rn ip tap add tap0 mode tap || (echo Make sure you have /dev/net/tun && exit 1)
+  # Install slirp4netns
+  - git clone https://github.com/rootless-containers/slirp4netns -b "${SLIRP4NETNS_VERSION}"
+  - cd slirp4netns
+  - ./autogen.sh
+  - ./configure
+  - make
+  - make install
+  - slirp4netns --version
+  # Run slirp4netns integration test
+  - make distcheck || (cat $(find . -name 'test-suite.log' ) && exit 1)
+  # Run benchmark test to ensure that libslirp can actually handle packets, with several MTU configurations
+  - make benchmark MTU=1500
+  - make benchmark MTU=512
+  - make benchmark MTU=65520

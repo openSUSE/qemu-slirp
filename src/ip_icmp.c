@@ -91,7 +91,31 @@ static int icmp_send(struct socket *so, struct mbuf *m, int hlen)
     struct ip *ip = mtod(m, struct ip *);
     struct sockaddr_in addr;
 
+    /*
+     * The behavior of reading SOCK_DGRAM+IPPROTO_ICMP sockets is inconsistent
+     * between host OSes.  On Linux, only the ICMP header and payload is
+     * included.  On macOS/Darwin, the socket acts like a raw socket and
+     * includes the IP header as well.  On other BSDs, SOCK_DGRAM+IPPROTO_ICMP
+     * sockets aren't supported at all, so we treat them like raw sockets.  It
+     * isn't possible to detect this difference at runtime, so we must use an
+     * #ifdef to determine if we need to remove the IP header.
+     */
+#ifdef CONFIG_BSD
+    so->so_type = IPPROTO_IP;
+#else
+    so->so_type = IPPROTO_ICMP;
+#endif
+
     so->s = slirp_socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP);
+    if (so->s == -1) {
+        if (errno == EAFNOSUPPORT
+         || errno == EPROTONOSUPPORT
+         || errno == EACCES) {
+            /* Kernel doesn't support or allow ping sockets. */
+            so->so_type = IPPROTO_IP;
+            so->s = slirp_socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+        }
+    }
     if (so->s == -1) {
         return -1;
     }
@@ -108,7 +132,6 @@ static int icmp_send(struct socket *so, struct mbuf *m, int hlen)
     so->so_faddr = ip->ip_dst;
     so->so_laddr = ip->ip_src;
     so->so_iptos = ip->ip_tos;
-    so->so_type = IPPROTO_ICMP;
     so->so_state = SS_ISFCONNECTED;
     so->so_expire = curtime + SO_EXPIRE;
 
@@ -184,7 +207,7 @@ void icmp_input(struct mbuf *m, int hlen)
             struct sockaddr_storage addr;
             int ttl;
 
-            so = socreate(slirp);
+            so = socreate(slirp, IPPROTO_ICMP);
             if (icmp_send(so, m, hlen) == 0) {
                 /* We could send this as ICMP, good! */
                 return;
@@ -208,7 +231,6 @@ void icmp_input(struct mbuf *m, int hlen)
             so->so_laddr = ip->ip_src;
             so->so_lport = htons(9);
             so->so_iptos = ip->ip_tos;
-            so->so_type = IPPROTO_ICMP;
             so->so_state = SS_ISFCONNECTED;
 
             /* Send the packet */
@@ -478,31 +500,24 @@ void icmp_receive(struct socket *so)
 
     id = icp->icmp_id;
     len = recv(so->s, icp, M_ROOM(m), 0);
-    /*
-     * The behavior of reading SOCK_DGRAM+IPPROTO_ICMP sockets is inconsistent
-     * between host OSes.  On Linux, only the ICMP header and payload is
-     * included.  On macOS/Darwin, the socket acts like a raw socket and
-     * includes the IP header as well.  On other BSDs, SOCK_DGRAM+IPPROTO_ICMP
-     * sockets aren't supported at all, so we treat them like raw sockets.  It
-     * isn't possible to detect this difference at runtime, so we must use an
-     * #ifdef to determine if we need to remove the IP header.
-     */
-#ifdef CONFIG_BSD
-    if (len >= sizeof(struct ip)) {
-        struct ip *inner_ip = mtod(m, struct ip *);
-        int inner_hlen = inner_ip->ip_hl << 2;
-        if (inner_hlen > len) {
+
+    if (so->so_type == IPPROTO_IP) {
+        if (len >= sizeof(struct ip)) {
+            struct ip *inner_ip = mtod(m, struct ip *);
+            int inner_hlen = inner_ip->ip_hl << 2;
+            if (inner_hlen > len) {
+                len = -1;
+                errno = -EINVAL;
+            } else {
+                len -= inner_hlen;
+                memmove(icp, (unsigned char *)icp + inner_hlen, len);
+            }
+        } else {
             len = -1;
             errno = -EINVAL;
-        } else {
-            len -= inner_hlen;
-            memmove(icp, (unsigned char *)icp + inner_hlen, len);
         }
-    } else {
-        len = -1;
-        errno = -EINVAL;
     }
-#endif
+
     icp->icmp_id = id;
 
     m->m_data -= hlen;

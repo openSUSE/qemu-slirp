@@ -143,6 +143,10 @@ static int get_dns_addr_libresolv(int af, void *pdns_addr, void *cached_addr,
     union res_sockaddr_union servers[NI_MAXSERV];
     int count;
     int found;
+    void *addr;
+
+    // we only support IPv4 and IPv4, we assume it's one or the other
+    assert(af == AF_INET || af == AF_INET6);
 
     if (res_ninit(&state) != 0) {
         return -1;
@@ -155,11 +159,16 @@ static int get_dns_addr_libresolv(int af, void *pdns_addr, void *cached_addr,
         if (af == servers[i].sin.sin_family) {
             found++;
         }
+        if (af == AF_INET) {
+            addr = &servers[i].sin.sin_addr;
+        } else { // af == AF_INET6
+            addr = &servers[i].sin6.sin6_addr;
+        }
 
         // we use the first found entry
         if (found == 1) {
-            memcpy(pdns_addr, &servers[i].sin.sin_addr, addrlen);
-            memcpy(cached_addr, &servers[i].sin.sin_addr, addrlen);
+            memcpy(pdns_addr, addr, addrlen);
+            memcpy(cached_addr, addr, addrlen);
             if (scope_id) {
                 *scope_id = 0;
             }
@@ -171,10 +180,7 @@ static int get_dns_addr_libresolv(int af, void *pdns_addr, void *cached_addr,
             break;
         } else if (slirp_debug & DBG_MISC) {
             char s[INET6_ADDRSTRLEN];
-            const char *res = inet_ntop(servers[i].sin.sin_family,
-                                        &servers[i].sin.sin_addr,
-                                        s,
-                                        sizeof(s));
+            const char *res = inet_ntop(af, addr, s, sizeof(s));
             if (!res) {
                 res = "  (string conversion error)";
             }
@@ -451,6 +457,12 @@ Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
         slirp->disable_dns = false;
     }
 
+    if (cfg->version >= 4) {
+        slirp->disable_dhcp = cfg->disable_dhcp;
+    } else {
+        slirp->disable_dhcp = false;
+    }
+
     return slirp;
 }
 
@@ -607,7 +619,10 @@ void slirp_pollfds_fill(Slirp *slirp, uint32_t *timeout,
 
         /*
          * Set for reading (and urgent data) if we are connected, can
-         * receive more, and we have room for it XXX /2 ?
+         * receive more, and we have room for it.
+         *
+         * If sb is already half full, we will wait for the guest to consume it,
+         * and notify again in sbdrop() when the sb becomes less than half full.
          */
         if (CONN_CANFRCV(so) &&
             (so->so_snd.sb_cc < (so->so_snd.sb_datalen / 2))) {
@@ -1353,6 +1368,8 @@ size_t slirp_socket_can_recv(Slirp *slirp, struct in_addr guest_addr,
     }
 
     if (!CONN_CANFRCV(so) || so->so_snd.sb_cc >= (so->so_snd.sb_datalen / 2)) {
+        /* If the sb is already half full, we will wait for the guest to consume it,
+         * and notify again in sbdrop() when the sb becomes less than half full. */
         return 0;
     }
 

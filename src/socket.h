@@ -72,7 +72,8 @@ struct socket {
     uint8_t so_iptos; /* Type of service */
     uint8_t so_emu; /* Is the socket emulated? */
 
-    uint8_t so_type; /* Type of socket, UDP or TCP */
+    uint8_t so_type; /* Protocol of the socket. May be 0 if loading old
+                      * states. */
     int32_t so_state; /* internal state flags SS_*, below */
 
     struct tcpcb *so_tcpcb; /* pointer to TCP protocol control block */
@@ -176,7 +177,7 @@ static inline void sockaddr_copy(struct sockaddr *dst, socklen_t dstlen, const s
 
 struct socket *solookup(struct socket **, struct socket *,
                         struct sockaddr_storage *, struct sockaddr_storage *);
-struct socket *socreate(Slirp *);
+struct socket *socreate(Slirp *, int);
 void sofree(struct socket *);
 int soread(struct socket *);
 int sorecvoob(struct socket *);
