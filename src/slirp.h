@@ -151,6 +151,8 @@ struct Slirp {
 
     bool disable_host_loopback;
 
+    uint32_t mfr_id;
+
     /* mbuf states */
     struct slirp_quehead m_freelist;
     struct slirp_quehead m_usedlist;
