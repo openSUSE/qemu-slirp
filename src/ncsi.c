@@ -56,7 +56,7 @@ static uint32_t ncsi_calculate_checksum(uint8_t *data, int len)
 }
 
 /* Get Capabilities */
-static int ncsi_rsp_handler_gc(struct ncsi_rsp_pkt_hdr *rnh)
+static int ncsi_rsp_handler_gc(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
 {
     struct ncsi_rsp_gc_pkt *rsp = (struct ncsi_rsp_gc_pkt *)rnh;
 
@@ -71,7 +71,7 @@ static int ncsi_rsp_handler_gc(struct ncsi_rsp_pkt_hdr *rnh)
 }
 
 /* Get Link status */
-static int ncsi_rsp_handler_gls(struct ncsi_rsp_pkt_hdr *rnh)
+static int ncsi_rsp_handler_gls(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
 {
     struct ncsi_rsp_gls_pkt *rsp = (struct ncsi_rsp_gls_pkt *)rnh;
 
@@ -80,7 +80,7 @@ static int ncsi_rsp_handler_gls(struct ncsi_rsp_pkt_hdr *rnh)
 }
 
 /* Get Parameters */
-static int ncsi_rsp_handler_gp(struct ncsi_rsp_pkt_hdr *rnh)
+static int ncsi_rsp_handler_gp(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
 {
     struct ncsi_rsp_gp_pkt *rsp = (struct ncsi_rsp_gp_pkt *)rnh;
 
@@ -96,7 +96,7 @@ static int ncsi_rsp_handler_gp(struct ncsi_rsp_pkt_hdr *rnh)
 static const struct ncsi_rsp_handler {
     unsigned char type;
     int payload;
-    int (*handler)(struct ncsi_rsp_pkt_hdr *rnh);
+    int (*handler)(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh);
 } ncsi_rsp_handlers[] = { { NCSI_PKT_RSP_CIS, 4, NULL },
                           { NCSI_PKT_RSP_SP, 4, NULL },
                           { NCSI_PKT_RSP_DP, 4, NULL },
@@ -178,7 +178,7 @@ void ncsi_input(Slirp *slirp, const uint8_t *pkt, int pkt_len)
 
         if (handler->handler) {
             /* TODO: handle errors */
-            handler->handler(rnh);
+            handler->handler(slirp, rnh);
         }
         ncsi_rsp_len += handler->payload;
     } else {
