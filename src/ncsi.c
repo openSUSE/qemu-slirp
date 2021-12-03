@@ -55,6 +55,17 @@ static uint32_t ncsi_calculate_checksum(uint8_t *data, int len)
     return checksum;
 }
 
+/* Get Version ID */
+static int ncsi_rsp_handler_gvi(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
+{
+    struct ncsi_rsp_gvi_pkt *rsp = (struct ncsi_rsp_gvi_pkt *)rnh;
+
+    rsp->ncsi_version = htonl(0xF1F0F000);
+    rsp->mf_id = htonl(slirp->mfr_id);
+
+    return 0;
+}
+
 /* Get Capabilities */
 static int ncsi_rsp_handler_gc(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
 {
@@ -117,7 +128,7 @@ static const struct ncsi_rsp_handler {
                           { NCSI_PKT_RSP_EGMF, 4, NULL },
                           { NCSI_PKT_RSP_DGMF, 4, NULL },
                           { NCSI_PKT_RSP_SNFC, 4, NULL },
-                          { NCSI_PKT_RSP_GVI, 40, NULL },
+                          { NCSI_PKT_RSP_GVI, 40, ncsi_rsp_handler_gvi },
                           { NCSI_PKT_RSP_GC, 32, ncsi_rsp_handler_gc },
                           { NCSI_PKT_RSP_GP, 40, ncsi_rsp_handler_gp },
                           { NCSI_PKT_RSP_GCPS, 172, NULL },
