@@ -6,6 +6,12 @@
 #ifndef SLIRP_SOCKET_H
 #define SLIRP_SOCKET_H
 
+#include <string.h>
+
+#ifndef _WIN32
+#include <sys/un.h>
+#endif
+
 #include "misc.h"
 #include "sbuf.h"
 
@@ -34,6 +40,8 @@ struct socket {
     struct socket *so_next, *so_prev; /* For a linked list of sockets */
 
     int s; /* The actual socket */
+    int s_aux; /* An auxiliary socket for miscellaneous use. Currently used to
+                * reserve OS ports in UNIX-to-inet translation. */
     struct gfwd_list *guestfwd;
 
     int pollfds_idx; /* GPollFD GArray index */
@@ -129,6 +137,13 @@ static inline int sockaddr_equal(const struct sockaddr_storage *a,
         return (in6_equal(&a6->sin6_addr, &b6->sin6_addr) &&
                 a6->sin6_port == b6->sin6_port);
     }
+#ifndef _WIN32
+    case AF_UNIX: {
+        const struct sockaddr_un *aun = (const struct sockaddr_un *)a;
+        const struct sockaddr_un *bun = (const struct sockaddr_un *)b;
+        return strncmp(aun->sun_path, bun->sun_path, sizeof(aun->sun_path)) == 0;
+    }
+#endif
     default:
         g_assert_not_reached();
     }
@@ -143,6 +158,10 @@ static inline socklen_t sockaddr_size(const struct sockaddr_storage *a)
         return sizeof(struct sockaddr_in);
     case AF_INET6:
         return sizeof(struct sockaddr_in6);
+#ifndef _WIN32
+    case AF_UNIX:
+        return sizeof(struct sockaddr_un);
+#endif
     default:
         g_assert_not_reached();
     }
