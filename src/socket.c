@@ -1083,7 +1083,6 @@ void sotranslate_accept(struct socket *so)
             so->so_faddr = slirp->vhost_addr;
             so->so_fport = 0;
 
-            // TODO Is there a better way of checking socket type?
             switch (so->so_type) {
             case IPPROTO_TCP:
                 s = slirp_socket(PF_INET, SOCK_STREAM, 0);
