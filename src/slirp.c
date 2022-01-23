@@ -53,6 +53,7 @@ unsigned curtime;
 static struct in_addr dns_addr;
 #ifndef _WIN32
 static struct in6_addr dns6_addr;
+static uint32_t dns6_scope_id;
 #endif
 static unsigned dns_addr_time;
 #ifndef _WIN32
@@ -136,7 +137,8 @@ static int get_dns_addr_cached(void *pdns_addr, void *cached_addr,
 }
 
 static int get_dns_addr_libresolv(int af, void *pdns_addr, void *cached_addr,
-                                  socklen_t addrlen, uint32_t *scope_id,
+                                  socklen_t addrlen,
+                                  uint32_t *scope_id, uint32_t *cached_scope_id,
                                   unsigned *cached_time)
 {
     struct __res_state state;
@@ -172,6 +174,9 @@ static int get_dns_addr_libresolv(int af, void *pdns_addr, void *cached_addr,
             if (scope_id) {
                 *scope_id = 0;
             }
+            if (cached_scope_id) {
+                *cached_scope_id = 0;
+            }
             *cached_time = curtime;
         }
 
@@ -205,7 +210,7 @@ int get_dns_addr(struct in_addr *pdns_addr)
         }
     }
     return get_dns_addr_libresolv(AF_INET, pdns_addr, &dns_addr,
-                                  sizeof(dns_addr), NULL, &dns_addr_time);
+                                  sizeof(dns_addr), NULL, NULL, &dns_addr_time);
 }
 
 int get_dns6_addr(struct in6_addr *pdns6_addr, uint32_t *scope_id)
@@ -214,12 +219,16 @@ int get_dns6_addr(struct in6_addr *pdns6_addr, uint32_t *scope_id)
         int ret;
         ret = get_dns_addr_cached(pdns6_addr, &dns6_addr, sizeof(dns6_addr),
                                   &dns6_addr_time);
+        if (ret == 0) {
+            *scope_id = dns6_scope_id;
+        }
         if (ret <= 0) {
             return ret;
         }
     }
     return get_dns_addr_libresolv(AF_INET6, pdns6_addr, &dns6_addr,
-                                  sizeof(dns6_addr), scope_id, &dns6_addr_time);
+                                  sizeof(dns6_addr),
+                                  scope_id, &dns6_scope_id, &dns6_addr_time);
 }
 
 #else // !defined(_WIN32) && !defined(__APPLE__)
@@ -254,7 +263,8 @@ static int get_dns_addr_cached(void *pdns_addr, void *cached_addr,
 }
 
 static int get_dns_addr_resolv_conf(int af, void *pdns_addr, void *cached_addr,
-                                    socklen_t addrlen, uint32_t *scope_id,
+                                    socklen_t addrlen,
+                                    uint32_t *scope_id, uint32_t *cached_scope_id,
                                     unsigned *cached_time)
 {
     char buff[512];
@@ -293,6 +303,9 @@ static int get_dns_addr_resolv_conf(int af, void *pdns_addr, void *cached_addr,
                 if (scope_id) {
                     *scope_id = if_index;
                 }
+                if (cached_scope_id) {
+                    *cached_scope_id = if_index;
+                }
                 *cached_time = curtime;
             }
 
@@ -328,7 +341,8 @@ int get_dns_addr(struct in_addr *pdns_addr)
         }
     }
     return get_dns_addr_resolv_conf(AF_INET, pdns_addr, &dns_addr,
-                                    sizeof(dns_addr), NULL, &dns_addr_time);
+                                    sizeof(dns_addr),
+                                    NULL, NULL, &dns_addr_time);
 }
 
 int get_dns6_addr(struct in6_addr *pdns6_addr, uint32_t *scope_id)
@@ -339,13 +353,16 @@ int get_dns6_addr(struct in6_addr *pdns6_addr, uint32_t *scope_id)
         int ret;
         ret = get_dns_addr_cached(pdns6_addr, &dns6_addr, sizeof(dns6_addr),
                                   &dns6_addr_stat, &dns6_addr_time);
+        if (ret == 0) {
+            *scope_id = dns6_scope_id;
+        }
         if (ret <= 0) {
             return ret;
         }
     }
     return get_dns_addr_resolv_conf(AF_INET6, pdns6_addr, &dns6_addr,
-                                    sizeof(dns6_addr), scope_id,
-                                    &dns6_addr_time);
+                                    sizeof(dns6_addr),
+                                    scope_id, &dns6_scope_id, &dns6_addr_time);
 }
 
 #endif
