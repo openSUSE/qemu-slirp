@@ -173,6 +173,9 @@ enum VMStateFlags {
      * VMStateField.struct_version_id to tell which version of the
      * structure we are referencing to use. */
     VMS_VSTRUCT = 0x8000,
+
+    /* Marker for end of list */
+    VMS_END = 0x10000
 };
 
 struct VMStateField {
@@ -386,6 +389,7 @@ extern const VMStateInfo slirp_vmstate_info_tmp;
 
 #define VMSTATE_END_OF_LIST() \
     {                         \
+        .flags = VMS_END,     \
     }
 
 #endif
