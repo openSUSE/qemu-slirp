@@ -251,6 +251,8 @@ int udp_output(struct socket *so, struct mbuf *m, struct sockaddr_in *saddr,
                struct sockaddr_in *daddr, int iptos)
 {
     Slirp *slirp = m->slirp;
+    char addr[INET_ADDRSTRLEN];
+
     M_DUP_DEBUG(slirp, m, 0, sizeof(struct udpiphdr));
 
     register struct udpiphdr *ui;
@@ -259,8 +261,8 @@ int udp_output(struct socket *so, struct mbuf *m, struct sockaddr_in *saddr,
     DEBUG_CALL("udp_output");
     DEBUG_ARG("so = %p", so);
     DEBUG_ARG("m = %p", m);
-    DEBUG_ARG("saddr = %s", inet_ntoa(saddr->sin_addr));
-    DEBUG_ARG("daddr = %s", inet_ntoa(daddr->sin_addr));
+    DEBUG_ARG("saddr = %s", inet_ntop(AF_INET, &saddr->sin_addr, addr, sizeof(addr)));
+    DEBUG_ARG("daddr = %s", inet_ntop(AF_INET, &daddr->sin_addr, addr, sizeof(addr)));
 
     /*
      * Adjust for header

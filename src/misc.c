@@ -301,6 +301,7 @@ char *slirp_connection_info(Slirp *slirp)
     uint16_t dst_port;
     struct socket *so;
     const char *state;
+    char addr[INET_ADDRSTRLEN];
     char buf[20];
 
     g_string_append_printf(str,
@@ -330,10 +331,11 @@ char *slirp_connection_info(Slirp *slirp)
         }
         slirp_fmt0(buf, sizeof(buf), "  TCP[%s]", state);
         g_string_append_printf(str, "%-19s %3d %15s %5d ", buf, so->s,
-                               src.sin_addr.s_addr ? inet_ntoa(src.sin_addr) :
-                                                     "*",
+                               src.sin_addr.s_addr ?
+                               inet_ntop(AF_INET, &src.sin_addr, addr, sizeof(addr)) : "*",
                                ntohs(src.sin_port));
-        g_string_append_printf(str, "%15s %5d %5d %5d\n", inet_ntoa(dst_addr),
+        g_string_append_printf(str, "%15s %5d %5d %5d\n",
+                               inet_ntop(AF_INET, &dst_addr, addr, sizeof(addr)),
                                ntohs(dst_port), so->so_rcv.sb_cc,
                                so->so_snd.sb_cc);
     }
@@ -354,10 +356,11 @@ char *slirp_connection_info(Slirp *slirp)
             dst_port = so->so_fport;
         }
         g_string_append_printf(str, "%-19s %3d %15s %5d ", buf, so->s,
-                               src.sin_addr.s_addr ? inet_ntoa(src.sin_addr) :
-                                                     "*",
+                               src.sin_addr.s_addr ?
+                               inet_ntop(AF_INET, &src.sin_addr, addr, sizeof(addr)) : "*",
                                ntohs(src.sin_port));
-        g_string_append_printf(str, "%15s %5d %5d %5d\n", inet_ntoa(dst_addr),
+        g_string_append_printf(str, "%15s %5d %5d %5d\n",
+                               inet_ntop(AF_INET, &dst_addr, addr, sizeof(addr)),
                                ntohs(dst_port), so->so_rcv.sb_cc,
                                so->so_snd.sb_cc);
     }
@@ -368,9 +371,10 @@ char *slirp_connection_info(Slirp *slirp)
         src.sin_addr = so->so_laddr;
         dst_addr = so->so_faddr;
         g_string_append_printf(str, "%-19s %3d %15s  -    ", buf, so->s,
-                               src.sin_addr.s_addr ? inet_ntoa(src.sin_addr) :
-                                                     "*");
-        g_string_append_printf(str, "%15s  -    %5d %5d\n", inet_ntoa(dst_addr),
+                               src.sin_addr.s_addr ?
+                               inet_ntop(AF_INET, &src.sin_addr, addr, sizeof(addr)) : "*");
+        g_string_append_printf(str, "%15s  -    %5d %5d\n",
+                               inet_ntop(AF_INET, &dst_addr, addr, sizeof(addr)),
                                so->so_rcv.sb_cc, so->so_snd.sb_cc);
     }
 

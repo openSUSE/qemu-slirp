@@ -35,9 +35,11 @@ void arp_table_add(Slirp *slirp, uint32_t ip_addr,
     ArpTable *arptbl = &slirp->arp_table;
     int i;
     char ethaddr_str[ETH_ADDRSTRLEN];
+    char addr[INET_ADDRSTRLEN];
 
     DEBUG_CALL("arp_table_add");
-    DEBUG_ARG("ip = %s", inet_ntoa((struct in_addr){ .s_addr = ip_addr }));
+    DEBUG_ARG("ip = %s", inet_ntop(AF_INET, &(struct in_addr){ .s_addr = ip_addr },
+                                   addr, sizeof(addr)));
     DEBUG_ARG("hw addr = %s", slirp_ether_ntoa(ethaddr, ethaddr_str,
                                                sizeof(ethaddr_str)));
 
@@ -69,9 +71,11 @@ bool arp_table_search(Slirp *slirp, uint32_t ip_addr,
     ArpTable *arptbl = &slirp->arp_table;
     int i;
     char ethaddr_str[ETH_ADDRSTRLEN];
+    char addr[INET_ADDRSTRLEN];
 
     DEBUG_CALL("arp_table_search");
-    DEBUG_ARG("ip = %s", inet_ntoa((struct in_addr){ .s_addr = ip_addr }));
+    DEBUG_ARG("ip = %s", inet_ntop(AF_INET, &(struct in_addr){ .s_addr = ip_addr },
+                                   addr, sizeof(addr)));
 
     /* If broadcast address */
     if (ip_addr == 0 || ip_addr == 0xffffffff || ip_addr == broadcast_addr) {

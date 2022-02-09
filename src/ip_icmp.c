@@ -324,10 +324,12 @@ void icmp_forward_error(struct mbuf *msrc, uint8_t type, uint8_t code, int minsi
         goto end_error;
     ip = mtod(msrc, struct ip *);
     if (slirp_debug & DBG_MISC) {
-        char bufa[20], bufb[20];
-        slirp_pstrcpy(bufa, sizeof(bufa), inet_ntoa(ip->ip_src));
-        slirp_pstrcpy(bufb, sizeof(bufb), inet_ntoa(ip->ip_dst));
-        DEBUG_MISC(" %.16s to %.16s", bufa, bufb);
+        char addr_src[INET_ADDRSTRLEN];
+        char addr_dst[INET_ADDRSTRLEN];
+
+        inet_ntop(AF_INET, &ip->ip_src, addr_src, sizeof(addr_src));
+        inet_ntop(AF_INET, &ip->ip_dst, addr_dst, sizeof(addr_dst));
+        DEBUG_MISC(" %.16s to %.16s", addr_src, addr_dst);
     }
     if (ip->ip_off & IP_OFFMASK)
         goto end_error; /* Only reply to fragment 0 */
