@@ -82,9 +82,6 @@ static void tcp_xmit_timer(register struct tcpcb *tp, int rtt);
 static int tcp_reass(register struct tcpcb *tp, register struct tcpiphdr *ti,
                      struct mbuf *m)
 {
-    if (m)
-        M_DUP_DEBUG(m->slirp, m, 0, 0);
-
     register struct tcpiphdr *q;
     struct socket *so = tp->t_socket;
     int flags;
