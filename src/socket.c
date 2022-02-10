@@ -375,7 +375,7 @@ int sosendoob(struct socket *so)
             len += n;
         }
         n = slirp_send(so, buff, len, (MSG_OOB)); /* |MSG_DONTWAIT)); */
-#ifdef DEBUG
+#ifdef SLIRP_DEBUG
         if (n != len) {
             DEBUG_ERROR("Didn't send all data urgently XXXXX");
         }
