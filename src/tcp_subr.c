@@ -329,7 +329,7 @@ struct tcpcb *tcp_close(struct tcpcb *tp)
     while (!tcpfrag_list_end(t, tp)) {
         t = tcpiphdr_next(t);
         m = tcpiphdr_prev(t)->ti_mbuf;
-        remque(tcpiphdr2qlink(tcpiphdr_prev(t)));
+        slirp_remque(tcpiphdr2qlink(tcpiphdr_prev(t)));
         m_free(m);
     }
     g_free(tp);
@@ -577,7 +577,7 @@ void tcp_connect(struct socket *inso)
 void tcp_attach(struct socket *so)
 {
     so->so_tcpcb = tcp_newtcpcb(so);
-    insque(so, &so->slirp->tcb);
+    slirp_insque(so, &so->slirp->tcb);
 }
 
 /*

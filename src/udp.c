@@ -331,7 +331,7 @@ int udp_attach(struct socket *so, unsigned short af)
 #endif
 
         so->so_expire = curtime + SO_EXPIRE;
-        insque(so, &so->slirp->udb);
+        slirp_insque(so, &so->slirp->udb);
     }
     so->slirp->cb->register_poll_fd(so->s, so->slirp->opaque);
     return (so->s);
@@ -384,7 +384,7 @@ struct socket *udpx_listen(Slirp *slirp,
     if (haddr->sa_family == AF_INET6)
         slirp_socket_set_v6only(so->s, (flags & SS_HOSTFWD_V6ONLY) != 0);
     so->so_expire = curtime + SO_EXPIRE;
-    insque(so, &slirp->udb);
+    slirp_insque(so, &slirp->udb);
 
     if (bind(so->s, haddr, haddrlen) < 0) {
         save_errno = errno;

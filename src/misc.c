@@ -8,22 +8,22 @@
 #include <sys/un.h>
 #endif
 
-inline void insque(void *a, void *b)
+inline void slirp_insque(void *a, void *b)
 {
-    register struct quehead *element = (struct quehead *)a;
-    register struct quehead *head = (struct quehead *)b;
+    register struct slirp_quehead *element = (struct slirp_quehead *)a;
+    register struct slirp_quehead *head = (struct slirp_quehead *)b;
     element->qh_link = head->qh_link;
-    head->qh_link = (struct quehead *)element;
-    element->qh_rlink = (struct quehead *)head;
-    ((struct quehead *)(element->qh_link))->qh_rlink =
-        (struct quehead *)element;
+    head->qh_link = (struct slirp_quehead *)element;
+    element->qh_rlink = (struct slirp_quehead *)head;
+    ((struct slirp_quehead *)(element->qh_link))->qh_rlink =
+        (struct slirp_quehead *)element;
 }
 
-inline void remque(void *a)
+inline void slirp_remque(void *a)
 {
-    register struct quehead *element = (struct quehead *)a;
-    ((struct quehead *)(element->qh_link))->qh_rlink = element->qh_rlink;
-    ((struct quehead *)(element->qh_rlink))->qh_link = element->qh_link;
+    register struct slirp_quehead *element = (struct slirp_quehead *)a;
+    ((struct slirp_quehead *)(element->qh_link))->qh_rlink = element->qh_rlink;
+    ((struct slirp_quehead *)(element->qh_rlink))->qh_link = element->qh_link;
     element->qh_rlink = NULL;
 }
 

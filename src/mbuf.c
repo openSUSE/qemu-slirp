@@ -29,12 +29,12 @@ void m_init(Slirp *slirp)
     slirp->m_usedlist.qh_link = slirp->m_usedlist.qh_rlink = &slirp->m_usedlist;
 }
 
-static void m_cleanup_list(struct quehead *list_head)
+static void m_cleanup_list(struct slirp_quehead *list_head)
 {
     struct mbuf *m, *next;
 
     m = (struct mbuf *)list_head->qh_link;
-    while ((struct quehead *)m != list_head) {
+    while ((struct slirp_quehead *)m != list_head) {
         next = m->m_next;
         if (m->m_flags & M_EXT) {
             g_free(m->m_ext);
@@ -77,11 +77,11 @@ struct mbuf *m_get(Slirp *slirp)
         m->slirp = slirp;
     } else {
         m = (struct mbuf *)slirp->m_freelist.qh_link;
-        remque(m);
+        slirp_remque(m);
     }
 
     /* Insert it in the used list */
-    insque(m, &slirp->m_usedlist);
+    slirp_insque(m, &slirp->m_usedlist);
     m->m_flags = (flags | M_USEDLIST);
 
     /* Initialise it */
@@ -104,7 +104,7 @@ void m_free(struct mbuf *m)
     if (m) {
         /* Remove from m_usedlist */
         if (m->m_flags & M_USEDLIST)
-            remque(m);
+            slirp_remque(m);
 
         /* If it's M_EXT, free() it */
         if (m->m_flags & M_EXT) {
@@ -118,7 +118,7 @@ void m_free(struct mbuf *m)
             m->slirp->mbuf_alloced--;
             g_free(m);
         } else if ((m->m_flags & M_FREELIST) == 0) {
-            insque(m, &m->slirp->m_freelist);
+            slirp_insque(m, &m->slirp->m_freelist);
             m->m_flags = M_FREELIST; /* Clobber other flags */
         }
     } /* if(m) */
@@ -213,7 +213,7 @@ struct mbuf *dtom(Slirp *slirp, void *dat)
 
     /* bug corrected for M_EXT buffers */
     for (m = (struct mbuf *)slirp->m_usedlist.qh_link;
-         (struct quehead *)m != &slirp->m_usedlist; m = m->m_next) {
+         (struct slirp_quehead *)m != &slirp->m_usedlist; m = m->m_next) {
         if (m->m_flags & M_EXT) {
             if ((char *)dat >= m->m_ext && (char *)dat < (m->m_ext + m->m_size))
                 return m;

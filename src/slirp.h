@@ -35,12 +35,6 @@
 #include <sys/filio.h>
 #endif
 
-/* Avoid conflicting with the libc insque() and remque(), which
-   have different prototypes. */
-#define insque slirp_insque
-#define remque slirp_remque
-#define quehead slirp_quehead
-
 #include "debug.h"
 #include "util.h"
 
@@ -156,13 +150,13 @@ struct Slirp {
     bool disable_host_loopback;
 
     /* mbuf states */
-    struct quehead m_freelist;
-    struct quehead m_usedlist;
+    struct slirp_quehead m_freelist;
+    struct slirp_quehead m_usedlist;
     int mbuf_alloced;
 
     /* if states */
-    struct quehead if_fastq; /* fast queue (for interactive data) */
-    struct quehead if_batchq; /* queue for non-interactive data */
+    struct slirp_quehead if_fastq; /* fast queue (for interactive data) */
+    struct slirp_quehead if_batchq; /* queue for non-interactive data */
     bool if_start_busy; /* avoid if_start recursion */
 
     /* ip states */

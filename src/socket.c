@@ -41,7 +41,7 @@ struct socket *solookup(struct socket **last, struct socket *head,
 /*
  * Create a new socket, initialise the fields
  * It is the responsibility of the caller to
- * insque() it into the correct linked-list
+ * slirp_insque() it into the correct linked-list
  */
 struct socket *socreate(Slirp *slirp, int type)
 {
@@ -61,11 +61,11 @@ struct socket *socreate(Slirp *slirp, int type)
 /*
  * Remove references to so from the given message queue.
  */
-static void soqfree(struct socket *so, struct quehead *qh)
+static void soqfree(struct socket *so, struct slirp_quehead *qh)
 {
     struct mbuf *ifq;
 
-    for (ifq = (struct mbuf *)qh->qh_link; (struct quehead *)ifq != qh;
+    for (ifq = (struct mbuf *)qh->qh_link; (struct slirp_quehead *)ifq != qh;
          ifq = ifq->ifq_next) {
         if (ifq->ifq_so == so) {
             struct mbuf *ifm;
@@ -78,7 +78,7 @@ static void soqfree(struct socket *so, struct quehead *qh)
 }
 
 /*
- * remque and free a socket, clobber cache
+ * slirp_remque and free a socket, clobber cache
  */
 void sofree(struct socket *so)
 {
@@ -101,7 +101,7 @@ void sofree(struct socket *so)
     m_free(so->so_m);
 
     if (so->so_next && so->so_prev)
-        remque(so); /* crashes if so is not in a queue */
+        slirp_remque(so); /* crashes if so is not in a queue */
 
     if (so->so_tcpcb) {
         g_free(so->so_tcpcb);
@@ -823,7 +823,7 @@ struct socket *tcpx_listen(Slirp *slirp,
 
     /* Don't tcp_attach... we don't need so_snd nor so_rcv */
     so->so_tcpcb = tcp_newtcpcb(so);
-    insque(so, &slirp->tcb);
+    slirp_insque(so, &slirp->tcb);
 
     /*
      * SS_FACCEPTONCE sockets must time out.
