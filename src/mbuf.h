@@ -134,7 +134,7 @@ static inline void ifs_init(struct mbuf *ifm)
     ifm->ifs_next = ifm->ifs_prev = ifm;
 }
 
-#ifdef DEBUG
+#ifdef SLIRP_DEBUG
 #  define MBUF_DEBUG 1
 #else
 #  ifdef HAVE_VALGRIND
