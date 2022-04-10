@@ -196,7 +196,7 @@ static int64_t clock_get_ns(void *opaque) {
 }
 
 struct timer {
-    SlirpTimerCb cb;
+    SlirpTimerId id;
     void *cb_opaque;
     int64_t expire;
     struct timer *next;
@@ -204,9 +204,9 @@ struct timer {
 
 static struct timer *timer_queue;
 
-static void *timer_new(SlirpTimerCb cb, void *cb_opaque, void *opaque) {
+static void *timer_new_opaque(SlirpTimerId id, void *cb_opaque, void *opaque) {
     struct timer *new_timer = malloc(sizeof(*new_timer));
-    new_timer->cb = cb;
+    new_timer->id = id;
     new_timer->cb_opaque = cb_opaque;
     new_timer->next = NULL;
     return new_timer;
@@ -242,14 +242,14 @@ static void timer_mod(void *_timer, int64_t expire_time, void *opaque) {
     *t = timer;
 }
 
-static void timer_check(void) {
+static void timer_check(Slirp *slirp) {
     while (timer_queue && timer_queue->expire <= mytime)
     {
         struct timer *t = timer_queue;
         printf("handling %p at time %lu\n",
                t, (unsigned long) timer_queue->expire);
         timer_queue = t->next;
-        t->cb(t->cb_opaque);
+        slirp_handle_timer(slirp, t->id, t->cb_opaque);
     }
 }
 
@@ -378,7 +378,7 @@ static struct SlirpCb callbacks = {
     .send_packet = send_packet,
     .guest_error = guest_error,
     .clock_get_ns = clock_get_ns,
-    .timer_new = timer_new,
+    .timer_new_opaque = timer_new_opaque,
     .timer_free = timer_free,
     .timer_mod = timer_mod,
     .register_poll_fd = register_poll_fd,
@@ -389,7 +389,7 @@ static struct SlirpCb callbacks = {
 
 int main(int argc, char *argv[]) {
     SlirpConfig config = {
-        .version = 3,
+        .version = 4,
         .restricted = false,
         .in_enabled = true,
         .vnetwork.s_addr = htonl(0x0a000200),
@@ -472,7 +472,7 @@ int main(int argc, char *argv[]) {
     while (!done) {
         printf("time %lu\n", (unsigned long) mytime);
 
-        timer_check();
+        timer_check(slirp);
         /* Here we make the virtual time wait like the real time, but we could
          * make it wait differently */
         timeout = timer_timeout();
