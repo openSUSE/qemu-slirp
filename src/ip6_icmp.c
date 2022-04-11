@@ -10,7 +10,7 @@
 #define NDP_Interval \
     g_rand_int_range(slirp->grand, NDP_MinRtrAdvInterval, NDP_MaxRtrAdvInterval)
 
-void icmp6_init(Slirp *slirp)
+void icmp6_post_init(Slirp *slirp)
 {
     if (!slirp->in6_enabled) {
         return;

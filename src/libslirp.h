@@ -82,6 +82,8 @@ typedef struct SlirpCb {
      * Fields introduced in SlirpConfig version 4 begin
      */
 
+    /* Initialization has completed and a Slirp* has been created.  */
+    void (*init_completed)(Slirp *slirp, void *opaque);
     /* Create a new timer.  When the timer fires, the application passes
      * the SlirpTimerId and cb_opaque to slirp_handle_timer.  */
     void *(*timer_new_opaque)(SlirpTimerId id, void *cb_opaque, void *opaque);

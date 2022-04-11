@@ -595,7 +595,6 @@ Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
 
     if_init(slirp);
     ip_init(slirp);
-    ip6_init(slirp);
 
     m_init(slirp);
 
@@ -645,6 +644,11 @@ Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
         slirp->disable_dhcp = false;
     }
 
+    if (slirp->cfg_version >= 4 && slirp->cb->init_completed) {
+        slirp->cb->init_completed(slirp, slirp->opaque);
+    }
+
+    ip6_post_init(slirp);
     return slirp;
 }
 

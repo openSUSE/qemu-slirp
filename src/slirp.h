@@ -246,7 +246,7 @@ void ip_stripoptions(register struct mbuf *, struct mbuf *);
 int ip_output(struct socket *, struct mbuf *);
 
 /* ip6_input.c */
-void ip6_init(Slirp *);
+void ip6_post_init(Slirp *);
 void ip6_cleanup(Slirp *);
 void ip6_input(struct mbuf *);
 
