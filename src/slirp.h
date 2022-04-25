@@ -120,6 +120,8 @@ bool ndp_table_search(Slirp *slirp, struct in6_addr ip_addr,
                       uint8_t out_ethaddr[ETH_ALEN]);
 
 struct Slirp {
+    int cfg_version;
+
     unsigned time_fasttimo;
     unsigned last_slowtimo;
     bool do_slowtimo;
@@ -244,7 +246,7 @@ void ip_stripoptions(register struct mbuf *, struct mbuf *);
 int ip_output(struct socket *, struct mbuf *);
 
 /* ip6_input.c */
-void ip6_init(Slirp *);
+void ip6_post_init(Slirp *);
 void ip6_cleanup(Slirp *);
 void ip6_input(struct mbuf *);
 
@@ -280,5 +282,6 @@ struct socket *slirp_find_ctl_socket(Slirp *slirp, struct in_addr guest_addr,
                                      int guest_port);
 
 void slirp_send_packet_all(Slirp *slirp, const void *buf, size_t len);
+void *slirp_timer_new(Slirp *slirp, SlirpTimerId id, void *cb_opaque);
 
 #endif

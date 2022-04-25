@@ -39,6 +39,11 @@ typedef void (*SlirpTimerCb)(void *opaque);
 typedef int (*SlirpAddPollCb)(int fd, int events, void *opaque);
 typedef int (*SlirpGetREventsCb)(int idx, void *opaque);
 
+typedef enum SlirpTimerId {
+    SLIRP_TIMER_RA,
+    SLIRP_TIMER_NUM,
+} SlirpTimerId;
+
 /*
  * Callbacks from slirp, to be set by the application.
  *
@@ -58,7 +63,8 @@ typedef struct SlirpCb {
     void (*guest_error)(const char *msg, void *opaque);
     /* Return the virtual clock value in nanoseconds */
     int64_t (*clock_get_ns)(void *opaque);
-    /* Create a new timer with the given callback and opaque data */
+    /* Create a new timer with the given callback and opaque data. Not
+     * needed if timer_new_opaque is provided. */
     void *(*timer_new)(SlirpTimerCb cb, void *cb_opaque, void *opaque);
     /* Remove and free a timer */
     void (*timer_free)(void *timer, void *opaque);
@@ -71,6 +77,16 @@ typedef struct SlirpCb {
     /* Kick the io-thread, to signal that new events may be processed because some TCP buffer
      * can now receive more data, i.e. slirp_socket_can_recv will return 1. */
     void (*notify)(void *opaque);
+
+    /*
+     * Fields introduced in SlirpConfig version 4 begin
+     */
+
+    /* Initialization has completed and a Slirp* has been created.  */
+    void (*init_completed)(Slirp *slirp, void *opaque);
+    /* Create a new timer.  When the timer fires, the application passes
+     * the SlirpTimerId and cb_opaque to slirp_handle_timer.  */
+    void *(*timer_new_opaque)(SlirpTimerId id, void *cb_opaque, void *opaque);
 } SlirpCb;
 
 #define SLIRP_CONFIG_VERSION_MIN 1
@@ -165,6 +181,11 @@ void slirp_pollfds_poll(Slirp *slirp, int select_error,
 /* This is called by the application when the guest emits a packet on the
  * guest network, to be interpreted by slirp. */
 void slirp_input(Slirp *slirp, const uint8_t *pkt, int pkt_len);
+
+/* This is called by the application when a timer expires, if it provides
+ * the timer_new_opaque callback.  It is not needed if the application only
+ * uses timer_new. */
+void slirp_handle_timer(Slirp *slirp, SlirpTimerId id, void *cb_opaque);
 
 /* These set up / remove port forwarding between a host port in the real world
  * and the guest network. */

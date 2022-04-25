@@ -11,9 +11,9 @@
  * IP initialization: fill in IP protocol switch table.
  * All protocols not implemented in kernel go to raw IP protocol handler.
  */
-void ip6_init(Slirp *slirp)
+void ip6_post_init(Slirp *slirp)
 {
-    icmp6_init(slirp);
+    icmp6_post_init(slirp);
 }
 
 void ip6_cleanup(Slirp *slirp)

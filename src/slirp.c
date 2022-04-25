@@ -528,6 +528,43 @@ static void slirp_init_once(void)
     }
 }
 
+static void ra_timer_handler_cb(void *opaque)
+{
+    Slirp *slirp = opaque;
+
+    return ra_timer_handler(slirp, NULL);
+}
+
+void slirp_handle_timer(Slirp *slirp, SlirpTimerId id, void *cb_opaque)
+{
+    g_return_if_fail(id >= 0 && id < SLIRP_TIMER_NUM);
+
+    switch (id) {
+    case SLIRP_TIMER_RA:
+        return ra_timer_handler(slirp, cb_opaque);
+    default:
+        abort();
+    }
+}
+
+void *slirp_timer_new(Slirp *slirp, SlirpTimerId id, void *cb_opaque)
+{
+    g_return_val_if_fail(id >= 0 && id < SLIRP_TIMER_NUM, NULL);
+
+    if (slirp->cfg_version >= 4 && slirp->cb->timer_new_opaque) {
+        return slirp->cb->timer_new_opaque(id, cb_opaque, slirp->opaque);
+    }
+
+    switch (id) {
+    case SLIRP_TIMER_RA:
+        g_return_val_if_fail(cb_opaque == NULL, NULL);
+        return slirp->cb->timer_new(ra_timer_handler_cb, slirp, slirp->opaque);
+
+    default:
+	abort();
+    }
+}
+
 Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
 {
     Slirp *slirp;
@@ -547,6 +584,7 @@ Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
 
     slirp_init_once();
 
+    slirp->cfg_version = cfg->version;
     slirp->opaque = opaque;
     slirp->cb = callbacks;
     slirp->grand = g_rand_new();
@@ -557,7 +595,6 @@ Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
 
     if_init(slirp);
     ip_init(slirp);
-    ip6_init(slirp);
 
     m_init(slirp);
 
@@ -607,6 +644,11 @@ Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
         slirp->disable_dhcp = false;
     }
 
+    if (slirp->cfg_version >= 4 && slirp->cb->init_completed) {
+        slirp->cb->init_completed(slirp, slirp->opaque);
+    }
+
+    ip6_post_init(slirp);
     return slirp;
 }
 
