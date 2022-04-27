@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.7.0] - 2022-04-26
+
+### Added
+
+  - Allow disabling the internal DHCP server !22
+  - icmp: Support falling back on trying a SOCK_RAW socket !92
+  - Support Unix sockets in hostfwd !103
+  - IPv6 DNS proxying support !110
+  - bootp: add support for UEFI HTTP boot !111
+  - New callback that supports CFI better !117
+
+### Fixed
+
+  - dhcp: Always send DHCP_OPT_LEN bytes in options !97
+  - Fix Haiku build !98 !99
+  - Fix memory leak when using libresolv !100
+  - Ensure sin6_scope_id is zero for global addresses !102
+  - resolv: fix IPv6 resolution on Darwin !104
+  - socket: Initialize so_type in socreate !109
+  - Handle ECONNABORTED from recv !116
+
 ## [4.6.1] - 2021-06-18
 
 ### Fixed
@@ -172,7 +193,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Standalone project, removing any QEMU dependency.
  - License clarifications.
 
-[Unreleased]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.6.1...master
+[Unreleased]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.7.0...master
+[4.7.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.6.1...v4.7.0
 [4.6.1]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.6.0...v4.6.1
 [4.6.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.5.0...v4.6.0
 [4.5.0]: https://gitlab.freedesktop.org/slirp/libslirp/compare/v4.4.0...v4.5.0
