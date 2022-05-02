@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
- * Copyright (c) 2021 Samuel Thibault
+ * Copyright (c) 2021-2022 Samuel Thibault
  */
 
 /*
@@ -35,6 +35,8 @@ int slirp_inet_aton(const char *cp, struct in_addr *ia)
 }
 #define inet_aton slirp_inet_aton
 #else
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <poll.h>
 #endif
 
