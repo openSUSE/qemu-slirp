@@ -54,6 +54,9 @@ host_system = host_machine.system()
 glib_dep = dependency('glib-2.0')
 
 cc = meson.get_compiler('c')
+add_project_arguments(cc.get_supported_arguments('-Wmissing-prototypes', '-Wstrict-prototypes',
+                                                 '-Wredundant-decls', '-Wundef', '-Wwrite-strings'),
+                      language: 'c', native: false)
 
 platform_deps = []
 

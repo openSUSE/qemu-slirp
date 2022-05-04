@@ -139,7 +139,7 @@ int get_dns_addr(struct in_addr *pdns_addr)
     return 0;
 }
 
-int is_site_local_dns_broadcast(struct in6_addr *address)
+static int is_site_local_dns_broadcast(struct in6_addr *address)
 {
     int i;
     for (i = 0; i < G_N_ELEMENTS(SITE_LOCAL_DNS_BROADCAST_ADDRS); i++) {
@@ -150,7 +150,7 @@ int is_site_local_dns_broadcast(struct in6_addr *address)
     return 0;
 }
 
-void print_dns_v6_address(struct in6_addr address)
+static void print_dns_v6_address(struct in6_addr address)
 {
     char address_str[INET6_ADDRSTRLEN] = "";
     if (inet_ntop(AF_INET6, &address, address_str, INET6_ADDRSTRLEN)
@@ -166,7 +166,7 @@ void print_dns_v6_address(struct in6_addr address)
 // are on deprecated addresses and not generally expected
 // to work. Further details at:
 // https://www.ietf.org/proceedings/52/I-D/draft-ietf-ipngwg-dns-discovery-03.txt
-int get_ipv6_dns_server(struct in6_addr *dns_server_address, uint32_t *scope_id)
+static int get_ipv6_dns_server(struct in6_addr *dns_server_address, uint32_t *scope_id)
 {
     PIP_ADAPTER_ADDRESSES addresses = NULL;
     PIP_ADAPTER_ADDRESSES address = NULL;
