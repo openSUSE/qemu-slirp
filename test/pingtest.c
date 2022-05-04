@@ -24,7 +24,7 @@
 #ifdef _WIN32
 //#include <sys/select.h>
 #include <winsock2.h>
-int slirp_inet_aton(const char *cp, struct in_addr *ia)
+static int slirp_inet_aton(const char *cp, struct in_addr *ia)
 {
     uint32_t addr = inet_addr(cp);
     if (addr == 0xffffffff) {
