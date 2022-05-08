@@ -69,6 +69,10 @@ elif host_system == 'darwin'
   platform_deps += [
     cc.find_library('resolv')
   ]
+elif host_system == 'haiku'
+  platform_deps += [
+    cc.find_library('network')
+  ]
 endif
 
 cargs = [
