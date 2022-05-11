@@ -648,6 +648,12 @@ Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
         slirp->cb->init_completed(slirp, slirp->opaque);
     }
 
+    if (cfg->version >= 5) {
+        slirp->mfr_id = cfg->mfr_id;
+    } else {
+        slirp->mfr_id = 0;
+    }
+
     ip6_post_init(slirp);
     return slirp;
 }
