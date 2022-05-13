@@ -16,10 +16,12 @@ conf.set('SLIRP_MAJOR_VERSION', major_version)
 conf.set('SLIRP_MINOR_VERSION', minor_version)
 conf.set('SLIRP_MICRO_VERSION', micro_version)
 
-full_version = run_command('build-aux/git-version-gen',
-                           '@0@/.tarball-version'.format(meson.current_source_dir()),
-                           check : true).stdout().strip()
-if full_version.startswith('UNKNOWN')
+r = run_command('build-aux/git-version-gen',
+                '@0@/.tarball-version'.format(meson.current_source_dir()),
+                check : false)
+
+full_version = r.stdout().strip()
+if r.returncode() != 0 or full_version.startswith('UNKNOWN')
   full_version = meson.project_version()
 elif not full_version.startswith(meson.project_version())
   error('meson.build project version @0@ does not match git-describe output @1@'
