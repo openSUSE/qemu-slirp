@@ -39,6 +39,9 @@
 #ifndef VMSTATE_H_
 #define VMSTATE_H_
 
+#ifdef __GNUC__
+#define HAVE_VMSTATE 1
+
 #include <unistd.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -392,4 +395,6 @@ extern const VMStateInfo slirp_vmstate_info_tmp;
         .flags = VMS_END,     \
     }
 
-#endif
+#endif /* __GNUC__ */
+
+#endif /* VMSTATE_H_ */

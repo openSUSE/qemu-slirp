@@ -279,7 +279,7 @@ char *slirp_neighbor_info(Slirp *slirp);
 /* Save the slirp state through the write_cb. The opaque pointer is passed as
  * such to the write_cb. */
 SLIRP_EXPORT
-void slirp_state_save(Slirp *s, SlirpWriteCb write_cb, void *opaque);
+int slirp_state_save(Slirp *s, SlirpWriteCb write_cb, void *opaque);
 
 /* Returns the version of the slirp state, to be saved along the state */
 SLIRP_EXPORT
