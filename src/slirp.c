@@ -158,7 +158,7 @@ static void print_dns_v6_address(struct in6_addr address)
         DEBUG_ERROR("Failed to stringify IPv6 address for logging.");
         return;
     }
-    DEBUG_CALL("IPv6 DNS server found: %s", address_str);
+    DEBUG_RAW_CALL("IPv6 DNS server found: %s", address_str);
 }
 
 // Gets the first valid DNS resolver with an IPv6 address.

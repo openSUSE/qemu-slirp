@@ -14,45 +14,52 @@
 
 extern int slirp_debug;
 
-#define DEBUG_CALL(fmt, ...)                      \
+#define DEBUG_CALL(name)                          \
     do {                                          \
         if (G_UNLIKELY(slirp_debug & DBG_CALL)) { \
-            g_debug(fmt "...", ##__VA_ARGS__);    \
+            g_debug(name "...");                  \
         }                                         \
     } while (0)
 
-#define DEBUG_VERBOSE_CALL(fmt, ...)                      \
+#define DEBUG_VERBOSE_CALL(name)                          \
     do {                                                  \
         if (G_UNLIKELY(slirp_debug & DBG_VERBOSE_CALL)) { \
-            g_debug(fmt "...", ##__VA_ARGS__);            \
+            g_debug(name "...");                          \
         }                                                 \
     } while (0)
 
-#define DEBUG_ARG(fmt, ...)                       \
+#define DEBUG_RAW_CALL(...)                       \
     do {                                          \
         if (G_UNLIKELY(slirp_debug & DBG_CALL)) { \
-            g_debug(" " fmt, ##__VA_ARGS__);      \
+            g_debug(__VA_ARGS__);                 \
         }                                         \
     } while (0)
 
-#define DEBUG_MISC(fmt, ...)                      \
+#define DEBUG_ARG(...)                            \
+    do {                                          \
+        if (G_UNLIKELY(slirp_debug & DBG_CALL)) { \
+            g_debug(" " __VA_ARGS__);             \
+        }                                         \
+    } while (0)
+
+#define DEBUG_MISC(...)                           \
     do {                                          \
         if (G_UNLIKELY(slirp_debug & DBG_MISC)) { \
-            g_debug(fmt, ##__VA_ARGS__);          \
+            g_debug(__VA_ARGS__);                 \
         }                                         \
     } while (0)
 
-#define DEBUG_ERROR(fmt, ...)                      \
+#define DEBUG_ERROR(...)                           \
     do {                                           \
         if (G_UNLIKELY(slirp_debug & DBG_ERROR)) { \
-            g_debug(fmt, ##__VA_ARGS__);           \
+            g_debug(__VA_ARGS__);                  \
         }                                          \
     } while (0)
 
-#define DEBUG_TFTP(fmt, ...)                      \
+#define DEBUG_TFTP(...)                           \
     do {                                          \
         if (G_UNLIKELY(slirp_debug & DBG_TFTP)) { \
-            g_debug(fmt, ##__VA_ARGS__);          \
+            g_debug(__VA_ARGS__);                 \
         }                                         \
     } while (0)
 
