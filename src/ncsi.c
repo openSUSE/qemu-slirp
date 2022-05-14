@@ -195,7 +195,7 @@ void ncsi_input(Slirp *slirp, const uint8_t *pkt, int pkt_len)
         if (handler->handler) {
             handler->handler(slirp, nh, rnh);
         }
-        ncsi_rsp_len += handler->payload;
+        ncsi_rsp_len += ntohs(rnh->common.length);
     } else {
         rnh->common.length = 0;
         rnh->code = htons(NCSI_PKT_RSP_C_UNAVAILABLE);
