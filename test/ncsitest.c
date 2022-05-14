@@ -148,7 +148,7 @@ static void test_ncsi_oem_mlx_gma(Slirp *slirp)
     assert(oem->data[MLX_GMA_STATUS_OFFSET] == 1);
 }
 
-static ssize_t send_packet(const void *buf, size_t len, void *opaque)
+static slirp_ssize_t send_packet(const void *buf, size_t len, void *opaque)
 {
     assert(len <= NCSI_RESPONSE_CAPACITY);
     memcpy(opaque, buf, len);

@@ -45,6 +45,8 @@
 #include <netinet/in.h>
 #endif
 
+#include "libslirp.h"
+
 #if defined(_WIN32) && (defined(__x86_64__) || defined(__i386__))
 #define SLIRP_PACKED __attribute__((gcc_struct, packed))
 #else
@@ -129,14 +131,14 @@ int slirp_getpeername_wrap(int fd, struct sockaddr *addr, int *addrlen);
 #define getsockname slirp_getsockname_wrap
 int slirp_getsockname_wrap(int fd, struct sockaddr *addr, int *addrlen);
 #define send slirp_send_wrap
-ssize_t slirp_send_wrap(int fd, const void *buf, size_t len, int flags);
+slirp_ssize_t slirp_send_wrap(int fd, const void *buf, size_t len, int flags);
 #define sendto slirp_sendto_wrap
-ssize_t slirp_sendto_wrap(int fd, const void *buf, size_t len, int flags,
+slirp_ssize_t slirp_sendto_wrap(int fd, const void *buf, size_t len, int flags,
                           const struct sockaddr *dest_addr, int addrlen);
 #define recv slirp_recv_wrap
-ssize_t slirp_recv_wrap(int fd, void *buf, size_t len, int flags);
+slirp_ssize_t slirp_recv_wrap(int fd, void *buf, size_t len, int flags);
 #define recvfrom slirp_recvfrom_wrap
-ssize_t slirp_recvfrom_wrap(int fd, void *buf, size_t len, int flags,
+slirp_ssize_t slirp_recvfrom_wrap(int fd, void *buf, size_t len, int flags,
                             struct sockaddr *src_addr, int *addrlen);
 #define closesocket slirp_closesocket_wrap
 int slirp_closesocket_wrap(int fd);

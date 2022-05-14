@@ -1511,7 +1511,7 @@ int slirp_remove_guestfwd(Slirp *slirp, struct in_addr guest_addr,
                            htons(guest_port));
 }
 
-ssize_t slirp_send(struct socket *so, const void *buf, size_t len, int flags)
+slirp_ssize_t slirp_send(struct socket *so, const void *buf, size_t len, int flags)
 {
     if (so->s == -1 && so->guestfwd) {
         /* XXX this blocks entire thread. Rewrite to use
@@ -1587,7 +1587,7 @@ void slirp_socket_recv(Slirp *slirp, struct in_addr guest_addr, int guest_port,
 
 void slirp_send_packet_all(Slirp *slirp, const void *buf, size_t len)
 {
-    ssize_t ret = slirp->cb->send_packet(buf, len, slirp->opaque);
+    slirp_ssize_t ret = slirp->cb->send_packet(buf, len, slirp->opaque);
 
     if (ret < 0) {
         g_critical("Failed to send packet, ret: %ld", (long)ret);

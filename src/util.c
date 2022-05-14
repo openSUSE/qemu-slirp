@@ -303,7 +303,7 @@ int slirp_getsockname_wrap(int sockfd, struct sockaddr *addr, int *addrlen)
 }
 
 #undef send
-ssize_t slirp_send_wrap(int sockfd, const void *buf, size_t len, int flags)
+slirp_ssize_t slirp_send_wrap(int sockfd, const void *buf, size_t len, int flags)
 {
     int ret;
     ret = send(sockfd, buf, len, flags);
@@ -314,7 +314,7 @@ ssize_t slirp_send_wrap(int sockfd, const void *buf, size_t len, int flags)
 }
 
 #undef sendto
-ssize_t slirp_sendto_wrap(int sockfd, const void *buf, size_t len, int flags,
+slirp_ssize_t slirp_sendto_wrap(int sockfd, const void *buf, size_t len, int flags,
                           const struct sockaddr *addr, int addrlen)
 {
     int ret;
@@ -326,7 +326,7 @@ ssize_t slirp_sendto_wrap(int sockfd, const void *buf, size_t len, int flags,
 }
 
 #undef recv
-ssize_t slirp_recv_wrap(int sockfd, void *buf, size_t len, int flags)
+slirp_ssize_t slirp_recv_wrap(int sockfd, void *buf, size_t len, int flags)
 {
     int ret;
     ret = recv(sockfd, buf, len, flags);
@@ -337,7 +337,7 @@ ssize_t slirp_recv_wrap(int sockfd, void *buf, size_t len, int flags)
 }
 
 #undef recvfrom
-ssize_t slirp_recvfrom_wrap(int sockfd, void *buf, size_t len, int flags,
+slirp_ssize_t slirp_recvfrom_wrap(int sockfd, void *buf, size_t len, int flags,
                             struct sockaddr *addr, int *addrlen)
 {
     int ret;

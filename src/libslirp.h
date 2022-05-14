@@ -10,7 +10,10 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <in6addr.h>
+typedef int slirp_ssize_t;
 #else
+#include <sys/types.h>
+typedef ssize_t slirp_ssize_t;
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #endif
@@ -33,8 +36,8 @@ enum {
     SLIRP_POLL_HUP = 1 << 4,
 };
 
-typedef ssize_t (*SlirpReadCb)(void *buf, size_t len, void *opaque);
-typedef ssize_t (*SlirpWriteCb)(const void *buf, size_t len, void *opaque);
+typedef slirp_ssize_t (*SlirpReadCb)(void *buf, size_t len, void *opaque);
+typedef slirp_ssize_t (*SlirpWriteCb)(const void *buf, size_t len, void *opaque);
 typedef void (*SlirpTimerCb)(void *opaque);
 typedef int (*SlirpAddPollCb)(int fd, int events, void *opaque);
 typedef int (*SlirpGetREventsCb)(int idx, void *opaque);
