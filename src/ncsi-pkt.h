@@ -40,6 +40,7 @@
 #define __be32 uint32_t
 #define __be16 uint16_t
 
+SLIRP_PACKED_BEGIN
 struct ncsi_pkt_hdr {
     unsigned char mc_id; /* Management controller ID */
     unsigned char revision; /* NCSI version - 0x01      */
@@ -49,64 +50,73 @@ struct ncsi_pkt_hdr {
     unsigned char channel; /* Network controller ID    */
     __be16 length; /* Payload length           */
     __be32 reserved1[2]; /* Reserved                 */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_pkt_hdr {
     struct ncsi_pkt_hdr common; /* Common NCSI packet header */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_pkt_hdr {
     struct ncsi_pkt_hdr common; /* Common NCSI packet header */
     __be16 code; /* Response code             */
     __be16 reason; /* Response reason           */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
+SLIRP_PACKED_BEGIN
 struct ncsi_aen_pkt_hdr {
     struct ncsi_pkt_hdr common; /* Common NCSI packet header */
     unsigned char reserved2[3]; /* Reserved                  */
     unsigned char type; /* AEN packet type           */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* NCSI common command packet */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header */
     __be32 checksum; /* Checksum       */
     unsigned char pad[26];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header */
     __be32 checksum; /* Checksum        */
     unsigned char pad[22];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Select Package */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_sp_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header */
     unsigned char reserved[3]; /* Reserved       */
     unsigned char hw_arbitration; /* HW arbitration */
     __be32 checksum; /* Checksum       */
     unsigned char pad[22];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Disable Channel */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_dc_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header  */
     unsigned char reserved[3]; /* Reserved        */
     unsigned char ald; /* Allow link down */
     __be32 checksum; /* Checksum        */
     unsigned char pad[22];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Reset Channel */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_rc_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header */
     __be32 reserved; /* Reserved       */
     __be32 checksum; /* Checksum       */
     unsigned char pad[22];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* AEN Enable */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_ae_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header   */
     unsigned char reserved[3]; /* Reserved         */
@@ -114,18 +124,20 @@ struct ncsi_cmd_ae_pkt {
     __be32 mode; /* AEN working mode */
     __be32 checksum; /* Checksum         */
     unsigned char pad[18];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Set Link */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_sl_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header    */
     __be32 mode; /* Link working mode */
     __be32 oem_mode; /* OEM link mode     */
     __be32 checksum; /* Checksum          */
     unsigned char pad[18];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Set VLAN Filter */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_svf_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header    */
     __be16 reserved; /* Reserved          */
@@ -135,18 +147,20 @@ struct ncsi_cmd_svf_pkt {
     unsigned char enable; /* Enable or disable */
     __be32 checksum; /* Checksum          */
     unsigned char pad[14];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Enable VLAN */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_ev_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header   */
     unsigned char reserved[3]; /* Reserved         */
     unsigned char mode; /* VLAN filter mode */
     __be32 checksum; /* Checksum         */
     unsigned char pad[22];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Set MAC Address */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_sma_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header          */
     unsigned char mac[6]; /* MAC address             */
@@ -154,57 +168,64 @@ struct ncsi_cmd_sma_pkt {
     unsigned char at_e; /* Addr type and operation */
     __be32 checksum; /* Checksum                */
     unsigned char pad[18];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Enable Broadcast Filter */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_ebf_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header */
     __be32 mode; /* Filter mode    */
     __be32 checksum; /* Checksum       */
     unsigned char pad[22];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Enable Global Multicast Filter */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_egmf_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header */
     __be32 mode; /* Global MC mode */
     __be32 checksum; /* Checksum       */
     unsigned char pad[22];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Set NCSI Flow Control */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_snfc_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header    */
     unsigned char reserved[3]; /* Reserved          */
     unsigned char mode; /* Flow control mode */
     __be32 checksum; /* Checksum          */
     unsigned char pad[22];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* OEM Request Command as per NCSI Specification */
+SLIRP_PACKED_BEGIN
 struct ncsi_cmd_oem_pkt {
     struct ncsi_cmd_pkt_hdr cmd; /* Command header    */
     __be32 mfr_id; /* Manufacture ID    */
     unsigned char data[]; /* OEM Payload Data  */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* OEM Response Packet as per NCSI Specification */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_oem_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Command header    */
     __be32 mfr_id; /* Manufacture ID    */
     unsigned char data[]; /* Payload data      */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Mellanox Response Data */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_oem_mlx_pkt {
     unsigned char cmd_rev; /* Command Revision  */
     unsigned char cmd; /* Command ID        */
     unsigned char param; /* Parameter         */
     unsigned char optional; /* Optional data     */
     unsigned char data[]; /* Data              */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Get Link Status */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_gls_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header   */
     __be32 status; /* Link status       */
@@ -212,9 +233,10 @@ struct ncsi_rsp_gls_pkt {
     __be32 oem_status; /* OEM link status   */
     __be32 checksum;
     unsigned char pad[10];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Get Version ID */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_gvi_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header */
     __be32 ncsi_version; /* NCSI version    */
@@ -225,9 +247,10 @@ struct ncsi_rsp_gvi_pkt {
     __be16 pci_ids[4]; /* PCI IDs         */
     __be32 mf_id; /* Manufacture ID  */
     __be32 checksum;
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Get Capabilities */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_gc_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header   */
     __be32 cap; /* Capabilities      */
@@ -243,9 +266,10 @@ struct ncsi_rsp_gc_pkt {
     unsigned char vlan_mode; /* VLAN mode         */
     unsigned char channel_cnt; /* Channel count     */
     __be32 checksum; /* Checksum          */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Get Parameters */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_gp_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header       */
     unsigned char mac_cnt; /* Number of MAC addr    */
@@ -264,9 +288,10 @@ struct ncsi_rsp_gp_pkt {
     unsigned char mac[6]; /* Supported MAC addr    */
     __be16 vlan; /* Supported VLAN tags   */
     __be32 checksum; /* Checksum              */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Get Controller Packet Statistics */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_gcps_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header            */
     __be32 cnt_hi; /* Counter cleared            */
@@ -311,9 +336,10 @@ struct ncsi_rsp_gcps_pkt {
     __be32 rx_runt_pkts; /* Rx error runt packets      */
     __be32 rx_jabber_pkts; /* Rx error jabber packets    */
     __be32 checksum; /* Checksum                   */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Get NCSI Statistics */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_gns_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header         */
     __be32 rx_cmds; /* Rx NCSI commands        */
@@ -324,9 +350,10 @@ struct ncsi_rsp_gns_pkt {
     __be32 tx_pkts; /* Tx NCSI packets         */
     __be32 tx_aen_pkts; /* Tx AEN packets          */
     __be32 checksum; /* Checksum                */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Get NCSI Pass-through Statistics */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_gnpts_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header     */
     __be32 tx_pkts; /* Tx packets          */
@@ -339,45 +366,50 @@ struct ncsi_rsp_gnpts_pkt {
     __be32 rx_us_err; /* Rx undersize errors */
     __be32 rx_os_err; /* Rx oversize errors  */
     __be32 checksum; /* Checksum            */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Get package status */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_gps_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header             */
     __be32 status; /* Hardware arbitration status */
     __be32 checksum;
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* Get package UUID */
+SLIRP_PACKED_BEGIN
 struct ncsi_rsp_gpuuid_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header */
     unsigned char uuid[16]; /* UUID            */
     __be32 checksum;
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* AEN: Link State Change */
+SLIRP_PACKED_BEGIN
 struct ncsi_aen_lsc_pkt {
     struct ncsi_aen_pkt_hdr aen; /* AEN header      */
     __be32 status; /* Link status     */
     __be32 oem_status; /* OEM link status */
     __be32 checksum; /* Checksum        */
     unsigned char pad[14];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* AEN: Configuration Required */
+SLIRP_PACKED_BEGIN
 struct ncsi_aen_cr_pkt {
     struct ncsi_aen_pkt_hdr aen; /* AEN header */
     __be32 checksum; /* Checksum   */
     unsigned char pad[22];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* AEN: Host Network Controller Driver Status Change */
+SLIRP_PACKED_BEGIN
 struct ncsi_aen_hncdsc_pkt {
     struct ncsi_aen_pkt_hdr aen; /* AEN header */
     __be32 status; /* Status     */
     __be32 checksum; /* Checksum   */
     unsigned char pad[18];
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* NCSI packet revision */
 #define NCSI_PKT_REVISION 0x01

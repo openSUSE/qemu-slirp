@@ -6,6 +6,8 @@
 #ifndef SLIRP_MAIN_H
 #define SLIRP_MAIN_H
 
+#include "libslirp.h"
+
 extern unsigned curtime;
 extern struct in_addr loopback_addr;
 extern unsigned long loopback_mask;

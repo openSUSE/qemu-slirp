@@ -115,13 +115,15 @@ G_STATIC_ASSERT(sizeof(struct icmp6) == 40);
 /*
  * NDP Options
  */
+SLIRP_PACKED_BEGIN
 struct ndpopt {
     uint8_t ndpopt_type; /* Option type */
     uint8_t ndpopt_len; /* /!\ In units of 8 octets */
     union {
         unsigned char linklayer_addr[6]; /* Source/Target Link-layer */
 #define ndpopt_linklayer ndpopt_body.linklayer_addr
-        struct prefixinfo { /* Prefix Information */
+        SLIRP_PACKED_BEGIN
+            struct prefixinfo { /* Prefix Information */
             uint8_t prefix_length;
 #if G_BYTE_ORDER == G_BIG_ENDIAN
             uint8_t L : 1, A : 1, reserved1 : 6;
@@ -132,16 +134,17 @@ struct ndpopt {
             uint32_t pref_lt; /* Preferred Lifetime */
             uint32_t reserved2;
             struct in6_addr prefix;
-        } SLIRP_PACKED prefixinfo;
+        } SLIRP_PACKED_END prefixinfo;
 #define ndpopt_prefixinfo ndpopt_body.prefixinfo
-        struct rdnss {
+        SLIRP_PACKED_BEGIN
+            struct rdnss {
             uint16_t reserved;
             uint32_t lifetime;
             struct in6_addr addr;
-        } SLIRP_PACKED rdnss;
+        } SLIRP_PACKED_END rdnss;
 #define ndpopt_rdnss ndpopt_body.rdnss
     } ndpopt_body;
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* NDP options type */
 #define NDPOPT_LINKLAYER_SOURCE 1 /* Source Link-Layer Address */

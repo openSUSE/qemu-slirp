@@ -47,10 +47,16 @@
 
 #include "libslirp.h"
 
+#ifdef __GNUC__
+#define SLIRP_PACKED_BEGIN
 #if defined(_WIN32) && (defined(__x86_64__) || defined(__i386__))
-#define SLIRP_PACKED __attribute__((gcc_struct, packed))
+#define SLIRP_PACKED_END __attribute__((gcc_struct, packed))
 #else
-#define SLIRP_PACKED __attribute__((packed))
+#define SLIRP_PACKED_END __attribute__((packed))
+#endif
+#elif defined(_MSC_VER)
+#define SLIRP_PACKED_BEGIN __pragma(pack(push, 1))
+#define SLIRP_PACKED_END __pragma(pack(pop))
 #endif
 
 #ifndef DIV_ROUND_UP
