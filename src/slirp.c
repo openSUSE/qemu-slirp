@@ -532,7 +532,7 @@ static void ra_timer_handler_cb(void *opaque)
 {
     Slirp *slirp = opaque;
 
-    return ra_timer_handler(slirp, NULL);
+    ra_timer_handler(slirp, NULL);
 }
 
 void slirp_handle_timer(Slirp *slirp, SlirpTimerId id, void *cb_opaque)
@@ -541,7 +541,8 @@ void slirp_handle_timer(Slirp *slirp, SlirpTimerId id, void *cb_opaque)
 
     switch (id) {
     case SLIRP_TIMER_RA:
-        return ra_timer_handler(slirp, cb_opaque);
+        ra_timer_handler(slirp, cb_opaque);
+        return;
     default:
         abort();
     }
