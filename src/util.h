@@ -30,10 +30,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <errno.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <inttypes.h>
 
 #ifdef _WIN32
@@ -41,6 +39,7 @@
 #include <windows.h>
 #include <ws2tcpip.h>
 #else
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
