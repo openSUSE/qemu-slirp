@@ -55,6 +55,59 @@ static uint32_t ncsi_calculate_checksum(uint8_t *data, int len)
     return checksum;
 }
 
+static const struct ncsi_rsp_oem_handler {
+    unsigned int mfr_id;
+    int (*handler)(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
+                   struct ncsi_rsp_pkt_hdr *rnh);
+} ncsi_rsp_oem_handlers[] = {
+    { NCSI_OEM_MFR_MLX_ID, NULL },
+    { NCSI_OEM_MFR_BCM_ID, NULL },
+    { NCSI_OEM_MFR_INTEL_ID, NULL },
+};
+
+/* Response handler for OEM command */
+static int ncsi_rsp_handler_oem(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
+                                struct ncsi_rsp_pkt_hdr *rnh)
+{
+    const struct ncsi_rsp_oem_handler *nrh = NULL;
+    const struct ncsi_cmd_oem_pkt *cmd = (const struct ncsi_cmd_oem_pkt *)nh;
+    struct ncsi_rsp_oem_pkt *rsp = (struct ncsi_rsp_oem_pkt *)rnh;
+    uint32_t mfr_id = ntohl(cmd->mfr_id);
+    int i;
+
+    rsp->mfr_id = cmd->mfr_id;
+
+    if (mfr_id != slirp->mfr_id) {
+        goto error;
+    }
+
+    /* Check for manufacturer id and Find the handler */
+    for (i = 0; i < G_N_ELEMENTS(ncsi_rsp_oem_handlers); i++) {
+        if (ncsi_rsp_oem_handlers[i].mfr_id == mfr_id) {
+            if (ncsi_rsp_oem_handlers[i].handler)
+                nrh = &ncsi_rsp_oem_handlers[i];
+            else
+                nrh = NULL;
+
+            break;
+        }
+    }
+
+    if (!nrh) {
+        goto error;
+    }
+
+    /* Process the packet */
+    return nrh->handler(slirp, nh, rnh);
+
+error:
+    rsp->rsp.common.length = htons(8);
+    rsp->rsp.code = htons(NCSI_PKT_RSP_C_UNSUPPORTED);
+    rsp->rsp.reason = htons(NCSI_PKT_RSP_R_UNKNOWN);
+    return -ENOENT;
+}
+
+
 /* Get Version ID */
 static int ncsi_rsp_handler_gvi(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
                                 struct ncsi_rsp_pkt_hdr *rnh)
@@ -140,7 +193,7 @@ static const struct ncsi_rsp_handler {
                           { NCSI_PKT_RSP_GNS, 172, NULL },
                           { NCSI_PKT_RSP_GNPTS, 172, NULL },
                           { NCSI_PKT_RSP_GPS, 8, NULL },
-                          { NCSI_PKT_RSP_OEM, 0, NULL },
+                          { NCSI_PKT_RSP_OEM, 0, ncsi_rsp_handler_oem },
                           { NCSI_PKT_RSP_PLDM, 0, NULL },
                           { NCSI_PKT_RSP_GPUUID, 20, NULL } };
 

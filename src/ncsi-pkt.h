@@ -181,6 +181,29 @@ struct ncsi_cmd_snfc_pkt {
     unsigned char pad[22];
 } SLIRP_PACKED;
 
+/* OEM Request Command as per NCSI Specification */
+struct ncsi_cmd_oem_pkt {
+    struct ncsi_cmd_pkt_hdr cmd; /* Command header    */
+    __be32 mfr_id; /* Manufacture ID    */
+    unsigned char data[]; /* OEM Payload Data  */
+} SLIRP_PACKED;
+
+/* OEM Response Packet as per NCSI Specification */
+struct ncsi_rsp_oem_pkt {
+    struct ncsi_rsp_pkt_hdr rsp; /* Command header    */
+    __be32 mfr_id; /* Manufacture ID    */
+    unsigned char data[]; /* Payload data      */
+} SLIRP_PACKED;
+
+/* Mellanox Response Data */
+struct ncsi_rsp_oem_mlx_pkt {
+    unsigned char cmd_rev; /* Command Revision  */
+    unsigned char cmd; /* Command ID        */
+    unsigned char param; /* Parameter         */
+    unsigned char optional; /* Optional data     */
+    unsigned char data[]; /* Data              */
+} SLIRP_PACKED;
+
 /* Get Link Status */
 struct ncsi_rsp_gls_pkt {
     struct ncsi_rsp_pkt_hdr rsp; /* Response header   */
@@ -441,5 +464,27 @@ struct ncsi_aen_hncdsc_pkt {
 #define NCSI_PKT_AEN_LSC 0x00 /* Link status change       */
 #define NCSI_PKT_AEN_CR 0x01 /* Configuration required   */
 #define NCSI_PKT_AEN_HNCDSC 0x02 /* HNC driver status change */
+
+/* OEM Vendor Manufacture ID */
+#define NCSI_OEM_MFR_MLX_ID 0x8119
+#define NCSI_OEM_MFR_BCM_ID 0x113d
+#define NCSI_OEM_MFR_INTEL_ID 0x157
+/* Intel specific OEM command */
+#define NCSI_OEM_INTEL_CMD_GMA 0x06 /* CMD ID for Get MAC */
+#define NCSI_OEM_INTEL_CMD_KEEP_PHY 0x20 /* CMD ID for Keep PHY up */
+/* Broadcom specific OEM Command */
+#define NCSI_OEM_BCM_CMD_GMA 0x01 /* CMD ID for Get MAC */
+/* Mellanox specific OEM Command */
+#define NCSI_OEM_MLX_CMD_GMA 0x00 /* CMD ID for Get MAC */
+#define NCSI_OEM_MLX_CMD_GMA_PARAM 0x1b /* Parameter for GMA */
+#define NCSI_OEM_MLX_CMD_SMAF 0x01 /* CMD ID for Set MC Affinity */
+#define NCSI_OEM_MLX_CMD_SMAF_PARAM 0x07 /* Parameter for SMAF */
+/* Offset in OEM request */
+#define MLX_SMAF_MAC_ADDR_OFFSET 8 /* Offset for MAC in SMAF */
+#define MLX_SMAF_MED_SUPPORT_OFFSET 14 /* Offset for medium in SMAF */
+/* Mac address offset in OEM response */
+#define BCM_MAC_ADDR_OFFSET 28
+#define MLX_MAC_ADDR_OFFSET 8
+#define INTEL_MAC_ADDR_OFFSET 1
 
 #endif /* NCSI_PKT_H */
