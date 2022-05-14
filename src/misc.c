@@ -8,7 +8,7 @@
 #include <sys/un.h>
 #endif
 
-inline void slirp_insque(void *a, void *b)
+void slirp_insque(void *a, void *b)
 {
     register struct slirp_quehead *element = (struct slirp_quehead *)a;
     register struct slirp_quehead *head = (struct slirp_quehead *)b;
@@ -19,7 +19,7 @@ inline void slirp_insque(void *a, void *b)
         (struct slirp_quehead *)element;
 }
 
-inline void slirp_remque(void *a)
+void slirp_remque(void *a)
 {
     register struct slirp_quehead *element = (struct slirp_quehead *)a;
     ((struct slirp_quehead *)(element->qh_link))->qh_rlink = element->qh_rlink;
