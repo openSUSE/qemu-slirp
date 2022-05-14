@@ -73,7 +73,7 @@ typedef uint32_t n_long; /* long as received from the net */
  */
 SLIRP_PACKED_BEGIN
 struct ip {
-#if G_BYTE_ORDER == G_BIG_ENDIAN
+#if (G_BYTE_ORDER == G_BIG_ENDIAN) && !defined(_MSC_VER)
     uint8_t ip_v : 4, /* version */
         ip_hl : 4; /* header length */
 #else
@@ -140,7 +140,7 @@ struct ip_timestamp {
     uint8_t ipt_code; /* IPOPT_TS */
     uint8_t ipt_len; /* size of structure (variable) */
     uint8_t ipt_ptr; /* index of current entry */
-#if G_BYTE_ORDER == G_BIG_ENDIAN
+#if (G_BYTE_ORDER == G_BIG_ENDIAN) && !defined(_MSC_VER)
     uint8_t ipt_oflw : 4, /* overflow counter */
         ipt_flg : 4; /* flags, see below */
 #else

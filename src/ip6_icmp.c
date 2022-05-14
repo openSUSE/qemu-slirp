@@ -294,8 +294,9 @@ static void ndp_send_na(Slirp *slirp, struct ip6 *ip, struct icmp6 *icmp)
     ricmp->icmp6_nna.R = NDP_IsRouter;
     ricmp->icmp6_nna.S = !IN6_IS_ADDR_MULTICAST(&rip->ip_dst);
     ricmp->icmp6_nna.O = 1;
-    ricmp->icmp6_nna.reserved_hi = 0;
-    ricmp->icmp6_nna.reserved_lo = 0;
+    ricmp->icmp6_nna.reserved_1 = 0;
+    ricmp->icmp6_nna.reserved_2 = 0;
+    ricmp->icmp6_nna.reserved_3 = 0;
     ricmp->icmp6_nna.target = icmp->icmp6_nns.target;
 
     /* Build NDP option */
