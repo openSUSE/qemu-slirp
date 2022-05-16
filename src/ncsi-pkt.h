@@ -487,4 +487,9 @@ struct ncsi_aen_hncdsc_pkt {
 #define MLX_MAC_ADDR_OFFSET 8
 #define INTEL_MAC_ADDR_OFFSET 1
 
+/* Status offset in OEM response */
+#define MLX_GMA_STATUS_OFFSET 0
+/* OEM Response payload length */
+#define MLX_GMA_PAYLOAD_LEN 24
+
 #endif /* NCSI_PKT_H */
