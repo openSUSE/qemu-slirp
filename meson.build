@@ -79,6 +79,7 @@ endif
 
 cargs = [
   '-DG_LOG_DOMAIN="Slirp"',
+  '-DBUILDING_LIBSLIRP',
 ]
 
 if cc.check_header('valgrind/valgrind.h')
