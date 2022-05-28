@@ -151,6 +151,14 @@ pingtest = executable('pingtest', 'test/pingtest.c',
 
 test('ping', pingtest)
 
+ncsitest = executable('ncsitest', 'test/ncsitest.c',
+  link_with: [lib],
+  include_directories: ['src'],
+  dependencies: [glib_dep, platform_deps]
+)
+
+test('ncsi', ncsitest)
+
 if install_devel
   install_headers(['src/libslirp.h'], subdir : 'slirp')
 

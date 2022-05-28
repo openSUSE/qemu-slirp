@@ -152,6 +152,7 @@ struct Slirp {
     bool disable_host_loopback;
 
     uint32_t mfr_id;
+    uint8_t oob_eth_addr[ETH_ALEN];
 
     /* mbuf states */
     struct slirp_quehead m_freelist;

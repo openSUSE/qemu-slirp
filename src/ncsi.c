@@ -55,8 +55,123 @@ static uint32_t ncsi_calculate_checksum(uint8_t *data, int len)
     return checksum;
 }
 
+/* Response handler for Mellanox command Get Mac Address */
+static int ncsi_rsp_handler_oem_mlx_gma(Slirp *slirp,
+                                        const struct ncsi_pkt_hdr *nh,
+                                        struct ncsi_rsp_pkt_hdr *rnh)
+{
+    uint8_t oob_eth_addr_allocated = 0;
+    struct ncsi_rsp_oem_pkt *rsp;
+    int i;
+
+    rsp = (struct ncsi_rsp_oem_pkt *)rnh;
+
+    /* Set the payload length */
+    rsp->rsp.common.length = htons(MLX_GMA_PAYLOAD_LEN);
+
+    for (i = 0; i < ETH_ALEN; i++) {
+        if (slirp->oob_eth_addr[i] != 0x00) {
+            oob_eth_addr_allocated = 1;
+            break;
+        }
+    }
+    rsp->data[MLX_GMA_STATUS_OFFSET] = oob_eth_addr_allocated;
+
+    /* Set the allocated management address */
+    memcpy(&rsp->data[MLX_MAC_ADDR_OFFSET], slirp->oob_eth_addr, ETH_ALEN);
+
+    return 0;
+}
+
+/* Response handler for Mellanox card */
+static int ncsi_rsp_handler_oem_mlx(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
+                                    struct ncsi_rsp_pkt_hdr *rnh)
+{
+    const struct ncsi_cmd_oem_pkt *cmd;
+    const struct ncsi_rsp_oem_mlx_pkt *cmd_mlx;
+    struct ncsi_rsp_oem_pkt *rsp;
+    struct ncsi_rsp_oem_mlx_pkt *rsp_mlx;
+
+    /* Get the command header */
+    cmd = (const struct ncsi_cmd_oem_pkt *)nh;
+    cmd_mlx = (const struct ncsi_rsp_oem_mlx_pkt *)cmd->data;
+
+    /* Get the response header */
+    rsp = (struct ncsi_rsp_oem_pkt *)rnh;
+    rsp_mlx = (struct ncsi_rsp_oem_mlx_pkt *)rsp->data;
+
+    /* Ensure the OEM response header matches the command's */
+    rsp_mlx->cmd_rev = cmd_mlx->cmd_rev;
+    rsp_mlx->cmd = cmd_mlx->cmd;
+    rsp_mlx->param = cmd_mlx->param;
+    rsp_mlx->optional = cmd_mlx->optional;
+
+    if (cmd_mlx->cmd == NCSI_OEM_MLX_CMD_GMA &&
+        cmd_mlx->param == NCSI_OEM_MLX_CMD_GMA_PARAM)
+        return ncsi_rsp_handler_oem_mlx_gma(slirp, nh, rnh);
+
+    rsp->rsp.common.length = htons(8);
+    rsp->rsp.code = htons(NCSI_PKT_RSP_C_UNSUPPORTED);
+    rsp->rsp.reason = htons(NCSI_PKT_RSP_R_UNKNOWN);
+    return -ENOENT;
+}
+
+static const struct ncsi_rsp_oem_handler {
+    unsigned int mfr_id;
+    int (*handler)(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
+                   struct ncsi_rsp_pkt_hdr *rnh);
+} ncsi_rsp_oem_handlers[] = {
+    { NCSI_OEM_MFR_MLX_ID, ncsi_rsp_handler_oem_mlx },
+    { NCSI_OEM_MFR_BCM_ID, NULL },
+    { NCSI_OEM_MFR_INTEL_ID, NULL },
+};
+
+/* Response handler for OEM command */
+static int ncsi_rsp_handler_oem(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
+                                struct ncsi_rsp_pkt_hdr *rnh)
+{
+    const struct ncsi_rsp_oem_handler *nrh = NULL;
+    const struct ncsi_cmd_oem_pkt *cmd = (const struct ncsi_cmd_oem_pkt *)nh;
+    struct ncsi_rsp_oem_pkt *rsp = (struct ncsi_rsp_oem_pkt *)rnh;
+    uint32_t mfr_id = ntohl(cmd->mfr_id);
+    int i;
+
+    rsp->mfr_id = cmd->mfr_id;
+
+    if (mfr_id != slirp->mfr_id) {
+        goto error;
+    }
+
+    /* Check for manufacturer id and Find the handler */
+    for (i = 0; i < G_N_ELEMENTS(ncsi_rsp_oem_handlers); i++) {
+        if (ncsi_rsp_oem_handlers[i].mfr_id == mfr_id) {
+            if (ncsi_rsp_oem_handlers[i].handler)
+                nrh = &ncsi_rsp_oem_handlers[i];
+            else
+                nrh = NULL;
+
+            break;
+        }
+    }
+
+    if (!nrh) {
+        goto error;
+    }
+
+    /* Process the packet */
+    return nrh->handler(slirp, nh, rnh);
+
+error:
+    rsp->rsp.common.length = htons(8);
+    rsp->rsp.code = htons(NCSI_PKT_RSP_C_UNSUPPORTED);
+    rsp->rsp.reason = htons(NCSI_PKT_RSP_R_UNKNOWN);
+    return -ENOENT;
+}
+
+
 /* Get Version ID */
-static int ncsi_rsp_handler_gvi(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
+static int ncsi_rsp_handler_gvi(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
+                                struct ncsi_rsp_pkt_hdr *rnh)
 {
     struct ncsi_rsp_gvi_pkt *rsp = (struct ncsi_rsp_gvi_pkt *)rnh;
 
@@ -67,7 +182,8 @@ static int ncsi_rsp_handler_gvi(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
 }
 
 /* Get Capabilities */
-static int ncsi_rsp_handler_gc(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
+static int ncsi_rsp_handler_gc(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
+                               struct ncsi_rsp_pkt_hdr *rnh)
 {
     struct ncsi_rsp_gc_pkt *rsp = (struct ncsi_rsp_gc_pkt *)rnh;
 
@@ -82,7 +198,8 @@ static int ncsi_rsp_handler_gc(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
 }
 
 /* Get Link status */
-static int ncsi_rsp_handler_gls(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
+static int ncsi_rsp_handler_gls(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
+                                struct ncsi_rsp_pkt_hdr *rnh)
 {
     struct ncsi_rsp_gls_pkt *rsp = (struct ncsi_rsp_gls_pkt *)rnh;
 
@@ -91,7 +208,8 @@ static int ncsi_rsp_handler_gls(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
 }
 
 /* Get Parameters */
-static int ncsi_rsp_handler_gp(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
+static int ncsi_rsp_handler_gp(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
+                               struct ncsi_rsp_pkt_hdr *rnh)
 {
     struct ncsi_rsp_gp_pkt *rsp = (struct ncsi_rsp_gp_pkt *)rnh;
 
@@ -107,7 +225,8 @@ static int ncsi_rsp_handler_gp(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh)
 static const struct ncsi_rsp_handler {
     unsigned char type;
     int payload;
-    int (*handler)(Slirp *slirp, struct ncsi_rsp_pkt_hdr *rnh);
+    int (*handler)(Slirp *slirp, const struct ncsi_pkt_hdr *nh,
+                   struct ncsi_rsp_pkt_hdr *rnh);
 } ncsi_rsp_handlers[] = { { NCSI_PKT_RSP_CIS, 4, NULL },
                           { NCSI_PKT_RSP_SP, 4, NULL },
                           { NCSI_PKT_RSP_DP, 4, NULL },
@@ -135,7 +254,7 @@ static const struct ncsi_rsp_handler {
                           { NCSI_PKT_RSP_GNS, 172, NULL },
                           { NCSI_PKT_RSP_GNPTS, 172, NULL },
                           { NCSI_PKT_RSP_GPS, 8, NULL },
-                          { NCSI_PKT_RSP_OEM, 0, NULL },
+                          { NCSI_PKT_RSP_OEM, 0, ncsi_rsp_handler_oem },
                           { NCSI_PKT_RSP_PLDM, 0, NULL },
                           { NCSI_PKT_RSP_GPUUID, 20, NULL } };
 
@@ -188,10 +307,9 @@ void ncsi_input(Slirp *slirp, const uint8_t *pkt, int pkt_len)
         rnh->reason = htons(NCSI_PKT_RSP_R_NO_ERROR);
 
         if (handler->handler) {
-            /* TODO: handle errors */
-            handler->handler(slirp, rnh);
+            handler->handler(slirp, nh, rnh);
         }
-        ncsi_rsp_len += handler->payload;
+        ncsi_rsp_len += ntohs(rnh->common.length);
     } else {
         rnh->common.length = 0;
         rnh->code = htons(NCSI_PKT_RSP_C_UNAVAILABLE);

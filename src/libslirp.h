@@ -144,6 +144,11 @@ typedef struct SlirpConfig {
      * Fields introduced in SlirpConfig version 5 begin
      */
     uint32_t mfr_id; /* Manufacturer ID (IANA Private Enterprise number) */
+    /*
+     * MAC address allocated for an out-of-band management controller, to be
+     * retrieved through NC-SI.
+     */
+    uint8_t oob_eth_addr[6];
 } SlirpConfig;
 
 /* Create a new instance of a slirp stack */

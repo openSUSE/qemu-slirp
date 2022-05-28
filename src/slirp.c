@@ -650,8 +650,10 @@ Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks, void *opaque)
 
     if (cfg->version >= 5) {
         slirp->mfr_id = cfg->mfr_id;
+        memcpy(slirp->oob_eth_addr, cfg->oob_eth_addr, ETH_ALEN);
     } else {
         slirp->mfr_id = 0;
+        memset(slirp->oob_eth_addr, 0, ETH_ALEN);
     }
 
     ip6_post_init(slirp);
