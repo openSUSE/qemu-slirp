@@ -41,7 +41,7 @@ static void test_ncsi_get_version_id(Slirp *slirp)
     };
     slirp_input(slirp, command, sizeof(command));
 
-    const struct ncsi_rsp_gvi_pkt *gvi = slirp->opaque + ETH_HLEN;
+    const struct ncsi_rsp_gvi_pkt *gvi = (const struct ncsi_rsp_gvi_pkt *) ((const char*) slirp->opaque + ETH_HLEN);
 
     assert(ntohs(gvi->rsp.code) == NCSI_PKT_RSP_C_COMPLETED);
     assert(ntohs(gvi->rsp.code) == NCSI_PKT_RSP_R_NO_ERROR);
@@ -78,7 +78,7 @@ static void test_ncsi_oem_mlx_unsupported_command(Slirp *slirp)
         0x00, /* Parameter */
         0x00, /* Optional data */
     };
-    const struct ncsi_rsp_oem_pkt *oem = slirp->opaque + ETH_HLEN;
+    const struct ncsi_rsp_oem_pkt *oem = (const struct ncsi_rsp_oem_pkt *) ((const char*) slirp->opaque + ETH_HLEN);
 
     slirp->mfr_id = 0x00000000;
     slirp_input(slirp, command, sizeof(command));
@@ -124,7 +124,7 @@ static void test_ncsi_oem_mlx_gma(Slirp *slirp)
         0x1b, /* Parameter */
         0x00, /* Optional data */
     };
-    const struct ncsi_rsp_oem_pkt *oem = slirp->opaque + ETH_HLEN;
+    const struct ncsi_rsp_oem_pkt *oem = (const struct ncsi_rsp_oem_pkt *) ((const char*) slirp->opaque + ETH_HLEN);
 
     memset(slirp->oob_eth_addr, 0, ETH_ALEN);
     slirp->mfr_id = 0x8119;
@@ -157,13 +157,15 @@ static slirp_ssize_t send_packet(const void *buf, size_t len, void *opaque)
 
 int main(int argc, char *argv[])
 {
-    SlirpConfig config = {};
-    SlirpCb callbacks = {};
+    SlirpConfig config = {
+        .version = SLIRP_CONFIG_VERSION_MAX,
+    };
+    SlirpCb callbacks = {
+        .send_packet = send_packet,
+    };
     Slirp *slirp = NULL;
     uint8_t ncsi_response[NCSI_RESPONSE_CAPACITY];
 
-    config.version = SLIRP_CONFIG_VERSION_MAX;
-    callbacks.send_packet = send_packet;
     slirp = slirp_new(&config, &callbacks, ncsi_response);
 
     test_ncsi_get_version_id(slirp);
