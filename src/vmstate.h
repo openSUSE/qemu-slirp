@@ -39,10 +39,6 @@
 #ifndef VMSTATE_H_
 #define VMSTATE_H_
 
-#ifdef __GNUC__
-#define HAVE_VMSTATE 1
-
-#include <unistd.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "slirp.h"
@@ -220,10 +216,17 @@ extern const VMStateInfo slirp_vmstate_info_nullptr;
 extern const VMStateInfo slirp_vmstate_info_buffer;
 extern const VMStateInfo slirp_vmstate_info_tmp;
 
+#ifdef __GNUC__
 #define type_check_array(t1, t2, n) ((t1(*)[n])0 - (t2 *)0)
 #define type_check_pointer(t1, t2) ((t1 **)0 - (t2 *)0)
 #define typeof_field(type, field) typeof(((type *)0)->field)
 #define type_check(t1, t2) ((t1 *)0 - (t2 *)0)
+#else
+#define type_check_array(t1, t2, n) 0
+#define type_check_pointer(t1, t2) 0
+#define typeof_field(type, field) (((type *)0)->field)
+#define type_check(t1, t2) 0
+#endif
 
 #define vmstate_offset_value(_state, _field, _type) \
     (offsetof(_state, _field) + type_check(_type, typeof_field(_state, _field)))
@@ -394,7 +397,5 @@ extern const VMStateInfo slirp_vmstate_info_tmp;
     {                         \
         .flags = VMS_END,     \
     }
-
-#endif /* __GNUC__ */
 
 #endif /* VMSTATE_H_ */
