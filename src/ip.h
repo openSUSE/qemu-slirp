@@ -71,8 +71,9 @@ typedef uint32_t n_long; /* long as received from the net */
 /*
  * Structure of an internet header, naked of options.
  */
+SLIRP_PACKED_BEGIN
 struct ip {
-#if G_BYTE_ORDER == G_BIG_ENDIAN
+#if (G_BYTE_ORDER == G_BIG_ENDIAN) && !defined(_MSC_VER)
     uint8_t ip_v : 4, /* version */
         ip_hl : 4; /* header length */
 #else
@@ -90,7 +91,7 @@ struct ip {
     uint8_t ip_p; /* protocol */
     uint16_t ip_sum; /* checksum */
     struct in_addr ip_src, ip_dst; /* source and dest address */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 #define IP_MAXPACKET 65535 /* maximum packet size */
 
@@ -134,11 +135,12 @@ struct ip {
 /*
  * Time stamp option structure.
  */
+SLIRP_PACKED_BEGIN
 struct ip_timestamp {
     uint8_t ipt_code; /* IPOPT_TS */
     uint8_t ipt_len; /* size of structure (variable) */
     uint8_t ipt_ptr; /* index of current entry */
-#if G_BYTE_ORDER == G_BIG_ENDIAN
+#if (G_BYTE_ORDER == G_BIG_ENDIAN) && !defined(_MSC_VER)
     uint8_t ipt_oflw : 4, /* overflow counter */
         ipt_flg : 4; /* flags, see below */
 #else
@@ -152,7 +154,7 @@ struct ip_timestamp {
             n_long ipt_time;
         } ipt_ta[1];
     } ipt_timestamp;
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /* flag bits for ipt_flg */
 #define IPOPT_TS_TSONLY 0 /* timestamps only */
@@ -179,14 +181,16 @@ struct ip_timestamp {
 #define IP_MSS 576 /* default maximum segment size */
 
 #if GLIB_SIZEOF_VOID_P == 4
+SLIRP_PACKED_BEGIN
 struct mbuf_ptr {
     struct mbuf *mptr;
     uint32_t dummy;
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 #else
+SLIRP_PACKED_BEGIN
 struct mbuf_ptr {
     struct mbuf *mptr;
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 #endif
 struct qlink {
     void *next, *prev;
@@ -195,6 +199,7 @@ struct qlink {
 /*
  * Overlay for ip header used by other protocols (tcp, udp).
  */
+SLIRP_PACKED_BEGIN
 struct ipovly {
     struct mbuf_ptr ih_mbuf; /* backpointer to mbuf */
     uint8_t ih_x1; /* (unused) */
@@ -202,7 +207,7 @@ struct ipovly {
     uint16_t ih_len; /* protocol length */
     struct in_addr ih_src; /* source internet address */
     struct in_addr ih_dst; /* destination internet address */
-} SLIRP_PACKED;
+} SLIRP_PACKED_END;
 
 /*
  * Ip reassembly queue structure.  Each fragment

@@ -10,9 +10,18 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <in6addr.h>
+typedef int slirp_ssize_t;
+#ifdef BUILDING_LIBSLIRP
+# define SLIRP_EXPORT __declspec(dllexport)
 #else
+# define SLIRP_EXPORT __declspec(dllimport)
+#endif
+#else
+#include <sys/types.h>
+typedef ssize_t slirp_ssize_t;
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#define SLIRP_EXPORT
 #endif
 
 #include "libslirp-version.h"
@@ -33,8 +42,8 @@ enum {
     SLIRP_POLL_HUP = 1 << 4,
 };
 
-typedef ssize_t (*SlirpReadCb)(void *buf, size_t len, void *opaque);
-typedef ssize_t (*SlirpWriteCb)(const void *buf, size_t len, void *opaque);
+typedef slirp_ssize_t (*SlirpReadCb)(void *buf, size_t len, void *opaque);
+typedef slirp_ssize_t (*SlirpWriteCb)(const void *buf, size_t len, void *opaque);
 typedef void (*SlirpTimerCb)(void *opaque);
 typedef int (*SlirpAddPollCb)(int fd, int events, void *opaque);
 typedef int (*SlirpGetREventsCb)(int idx, void *opaque);
@@ -152,9 +161,11 @@ typedef struct SlirpConfig {
 } SlirpConfig;
 
 /* Create a new instance of a slirp stack */
+SLIRP_EXPORT
 Slirp *slirp_new(const SlirpConfig *cfg, const SlirpCb *callbacks,
                  void *opaque);
 /* slirp_init is deprecated in favor of slirp_new */
+SLIRP_EXPORT
 Slirp *slirp_init(int restricted, bool in_enabled, struct in_addr vnetwork,
                   struct in_addr vnetmask, struct in_addr vhost,
                   bool in6_enabled, struct in6_addr vprefix_addr6,
@@ -166,6 +177,7 @@ Slirp *slirp_init(int restricted, bool in_enabled, struct in_addr vnetwork,
                   const char *vdomainname, const SlirpCb *callbacks,
                   void *opaque);
 /* Shut down an instance of a slirp stack */
+SLIRP_EXPORT
 void slirp_cleanup(Slirp *slirp);
 
 /* This is called by the application when it is about to sleep through poll().
@@ -175,6 +187,7 @@ void slirp_cleanup(Slirp *slirp);
  * time. slirp_pollfds_fill calls add_poll for each file descriptor
  * that should be monitored along the sleep. The opaque pointer is passed as
  * such to add_poll, and add_poll returns an index. */
+SLIRP_EXPORT
 void slirp_pollfds_fill(Slirp *slirp, uint32_t *timeout,
                         SlirpAddPollCb add_poll, void *opaque);
 
@@ -184,45 +197,55 @@ void slirp_pollfds_fill(Slirp *slirp, uint32_t *timeout,
  * slirp_pollfds_fill call, to know whether the descriptor is available for
  * read/write/etc. (SLIRP_POLL_*)
  * select_error should be passed 1 if poll() returned an error. */
+SLIRP_EXPORT
 void slirp_pollfds_poll(Slirp *slirp, int select_error,
                         SlirpGetREventsCb get_revents, void *opaque);
 
 /* This is called by the application when the guest emits a packet on the
  * guest network, to be interpreted by slirp. */
+SLIRP_EXPORT
 void slirp_input(Slirp *slirp, const uint8_t *pkt, int pkt_len);
 
 /* This is called by the application when a timer expires, if it provides
  * the timer_new_opaque callback.  It is not needed if the application only
  * uses timer_new. */
+SLIRP_EXPORT
 void slirp_handle_timer(Slirp *slirp, SlirpTimerId id, void *cb_opaque);
 
 /* These set up / remove port forwarding between a host port in the real world
  * and the guest network. */
+SLIRP_EXPORT
 int slirp_add_hostfwd(Slirp *slirp, int is_udp, struct in_addr host_addr,
                       int host_port, struct in_addr guest_addr, int guest_port);
+SLIRP_EXPORT
 int slirp_remove_hostfwd(Slirp *slirp, int is_udp, struct in_addr host_addr,
                          int host_port);
 
 #define SLIRP_HOSTFWD_UDP 1
 #define SLIRP_HOSTFWD_V6ONLY 2
+SLIRP_EXPORT
 int slirp_add_hostxfwd(Slirp *slirp,
                        const struct sockaddr *haddr, socklen_t haddrlen,
                        const struct sockaddr *gaddr, socklen_t gaddrlen,
                        int flags);
+SLIRP_EXPORT
 int slirp_remove_hostxfwd(Slirp *slirp,
                           const struct sockaddr *haddr, socklen_t haddrlen,
                           int flags);
 
 /* Set up port forwarding between a port in the guest network and a
  * command running on the host */
+SLIRP_EXPORT
 int slirp_add_exec(Slirp *slirp, const char *cmdline,
                    struct in_addr *guest_addr, int guest_port);
 /* Set up port forwarding between a port in the guest network and a
  * Unix port on the host */
+SLIRP_EXPORT
 int slirp_add_unix(Slirp *slirp, const char *unixsock,
                    struct in_addr *guest_addr, int guest_port);
 /* Set up port forwarding between a port in the guest network and a
  * callback that will receive the data coming from the port */
+SLIRP_EXPORT
 int slirp_add_guestfwd(Slirp *slirp, SlirpWriteCb write_cb, void *opaque,
                        struct in_addr *guest_addr, int guest_port);
 
@@ -231,37 +254,46 @@ int slirp_add_guestfwd(Slirp *slirp, SlirpWriteCb write_cb, void *opaque,
 
 /* This is called by the application for a guestfwd, to determine how much data
  * can be received by the forwarded port through a call to slirp_socket_recv. */
+SLIRP_EXPORT
 size_t slirp_socket_can_recv(Slirp *slirp, struct in_addr guest_addr,
                              int guest_port);
 /* This is called by the application for a guestfwd, to provide the data to be
  * sent on the forwarded port */
+SLIRP_EXPORT
 void slirp_socket_recv(Slirp *slirp, struct in_addr guest_addr, int guest_port,
                        const uint8_t *buf, int size);
 
 /* Remove entries added by slirp_add_exec, slirp_add_unix or slirp_add_guestfwd */
+SLIRP_EXPORT
 int slirp_remove_guestfwd(Slirp *slirp, struct in_addr guest_addr,
                           int guest_port);
 
 /* Return a human-readable state of the slirp stack */
+SLIRP_EXPORT
 char *slirp_connection_info(Slirp *slirp);
 
 /* Return a human-readable state of the NDP/ARP tables */
+SLIRP_EXPORT
 char *slirp_neighbor_info(Slirp *slirp);
 
 /* Save the slirp state through the write_cb. The opaque pointer is passed as
  * such to the write_cb. */
-void slirp_state_save(Slirp *s, SlirpWriteCb write_cb, void *opaque);
+SLIRP_EXPORT
+int slirp_state_save(Slirp *s, SlirpWriteCb write_cb, void *opaque);
 
 /* Returns the version of the slirp state, to be saved along the state */
+SLIRP_EXPORT
 int slirp_state_version(void);
 
 /* Load the slirp state through the read_cb. The opaque pointer is passed as
  * such to the read_cb. The version should be given as it was obtained from
  * slirp_state_version when slirp_state_save was called. */
+SLIRP_EXPORT
 int slirp_state_load(Slirp *s, int version_id, SlirpReadCb read_cb,
                      void *opaque);
 
 /* Return the version of the slirp implementation */
+SLIRP_EXPORT
 const char *slirp_version_string(void);
 
 #ifdef __cplusplus

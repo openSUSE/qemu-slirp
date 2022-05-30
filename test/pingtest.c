@@ -85,7 +85,7 @@ static void checksum(uint8_t *data, size_t size, uint8_t *cksum) {
 
 /* This is called when receiving a packet from the virtual network, for the
  * guest */
-static ssize_t send_packet(const void *buf, size_t len, void *opaque) {
+static slirp_ssize_t send_packet(const void *buf, size_t len, void *opaque) {
     const uint8_t *data = buf;
 
     assert(len >= 14);

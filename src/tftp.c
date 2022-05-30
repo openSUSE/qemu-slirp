@@ -333,7 +333,7 @@ static void tftp_handle_rrq(Slirp *slirp, struct sockaddr_storage *srcsas,
         return;
     }
 
-    if (strcasecmp(&tp->x.tp_buf[k], "octet") != 0) {
+    if (g_ascii_strcasecmp(&tp->x.tp_buf[k], "octet") != 0) {
         tftp_send_error(spt, 4, "Unsupported transfer mode", tp);
         return;
     }
@@ -377,7 +377,7 @@ static void tftp_handle_rrq(Slirp *slirp, struct sockaddr_storage *srcsas,
         value = &tp->x.tp_buf[k];
         k += strlen(value) + 1;
 
-        if (strcasecmp(key, "tsize") == 0) {
+        if (g_ascii_strcasecmp(key, "tsize") == 0) {
             int tsize = atoi(value);
             struct stat stat_p;
 
@@ -393,7 +393,7 @@ static void tftp_handle_rrq(Slirp *slirp, struct sockaddr_storage *srcsas,
             option_name[nb_options] = "tsize";
             option_value[nb_options] = tsize;
             nb_options++;
-        } else if (strcasecmp(key, "blksize") == 0) {
+        } else if (g_ascii_strcasecmp(key, "blksize") == 0) {
             int blksize = atoi(value);
 
             /* Accept blksize up to our maximum size */

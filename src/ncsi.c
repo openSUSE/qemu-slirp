@@ -318,7 +318,7 @@ void ncsi_input(Slirp *slirp, const uint8_t *pkt, int pkt_len)
 
     /* Add the optional checksum at the end of the frame. */
     checksum = ncsi_calculate_checksum((uint8_t *)rnh, ncsi_rsp_len);
-    pchecksum = (uint32_t *)((void *)rnh + ncsi_rsp_len);
+    pchecksum = (uint32_t *)((char *)rnh + ncsi_rsp_len);
     *pchecksum = htonl(checksum);
     ncsi_rsp_len += 4;
 

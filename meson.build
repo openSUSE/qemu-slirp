@@ -16,14 +16,22 @@ conf.set('SLIRP_MAJOR_VERSION', major_version)
 conf.set('SLIRP_MINOR_VERSION', minor_version)
 conf.set('SLIRP_MICRO_VERSION', micro_version)
 
-full_version = run_command('build-aux/git-version-gen',
-                           '@0@/.tarball-version'.format(meson.current_source_dir()),
-                           check : true).stdout().strip()
-if full_version.startswith('UNKNOWN')
+cc = meson.get_compiler('c')
+
+if cc.get_argument_syntax() != 'msvc'
+  r = run_command('build-aux/git-version-gen',
+                  '@0@/.tarball-version'.format(meson.current_source_dir()),
+                  check : false)
+
+  full_version = r.stdout().strip()
+  if r.returncode() != 0 or full_version.startswith('UNKNOWN')
+    full_version = meson.project_version()
+  elif not full_version.startswith(meson.project_version())
+    error('meson.build project version @0@ does not match git-describe output @1@'
+          .format(meson.project_version(), full_version))
+  endif
+else
   full_version = meson.project_version()
-elif not full_version.startswith(meson.project_version())
-  error('meson.build project version @0@ does not match git-describe output @1@'
-        .format(meson.project_version(), full_version))
 endif
 conf.set_quoted('SLIRP_VERSION_STRING', full_version + get_option('version_suffix'))
 
@@ -53,7 +61,6 @@ host_system = host_machine.system()
 
 glib_dep = dependency('glib-2.0')
 
-cc = meson.get_compiler('c')
 add_project_arguments(cc.get_supported_arguments('-Wmissing-prototypes', '-Wstrict-prototypes',
                                                  '-Wredundant-decls', '-Wundef', '-Wwrite-strings'),
                       language: 'c', native: false)
@@ -77,6 +84,7 @@ endif
 
 cargs = [
   '-DG_LOG_DOMAIN="Slirp"',
+  '-DBUILDING_LIBSLIRP',
 ]
 
 if cc.check_header('valgrind/valgrind.h')

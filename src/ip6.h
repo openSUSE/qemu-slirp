@@ -176,14 +176,15 @@ static inline void in6_compute_ethaddr(struct in6_addr ip,
  * Structure of an internet header, naked of options.
  */
 struct ip6 {
-#if G_BYTE_ORDER == G_BIG_ENDIAN
-    uint32_t ip_v : 4, /* version */
-        ip_tc_hi : 4, /* traffic class */
-        ip_tc_lo : 4, ip_fl_hi : 4, /* flow label */
-        ip_fl_lo : 16;
+#if (G_BYTE_ORDER == G_BIG_ENDIAN) && !defined(_MSC_VER)
+    uint8_t ip_v : 4, /* version */
+         ip_tc_hi : 4; /* traffic class */
+    uint8_t ip_tc_lo : 4, ip_fl_hi : 4; /* flow label */
 #else
-    uint32_t ip_tc_hi : 4, ip_v : 4, ip_fl_hi : 4, ip_tc_lo : 4, ip_fl_lo : 16;
+    uint8_t ip_tc_hi : 4, ip_v : 4;
+    uint8_t ip_fl_hi : 4, ip_tc_lo : 4;
 #endif
+    uint16_t ip_fl_lo;
     uint16_t ip_pl; /* payload length */
     uint8_t ip_nh; /* next header */
     uint8_t ip_hl; /* hop limit */

@@ -158,7 +158,7 @@ static void print_dns_v6_address(struct in6_addr address)
         DEBUG_ERROR("Failed to stringify IPv6 address for logging.");
         return;
     }
-    DEBUG_CALL("IPv6 DNS server found: %s", address_str);
+    DEBUG_RAW_CALL("IPv6 DNS server found: %s", address_str);
 }
 
 // Gets the first valid DNS resolver with an IPv6 address.
@@ -532,7 +532,7 @@ static void ra_timer_handler_cb(void *opaque)
 {
     Slirp *slirp = opaque;
 
-    return ra_timer_handler(slirp, NULL);
+    ra_timer_handler(slirp, NULL);
 }
 
 void slirp_handle_timer(Slirp *slirp, SlirpTimerId id, void *cb_opaque)
@@ -541,7 +541,8 @@ void slirp_handle_timer(Slirp *slirp, SlirpTimerId id, void *cb_opaque)
 
     switch (id) {
     case SLIRP_TIMER_RA:
-        return ra_timer_handler(slirp, cb_opaque);
+        ra_timer_handler(slirp, cb_opaque);
+        return;
     default:
         abort();
     }
@@ -1511,7 +1512,7 @@ int slirp_remove_guestfwd(Slirp *slirp, struct in_addr guest_addr,
                            htons(guest_port));
 }
 
-ssize_t slirp_send(struct socket *so, const void *buf, size_t len, int flags)
+slirp_ssize_t slirp_send(struct socket *so, const void *buf, size_t len, int flags)
 {
     if (so->s == -1 && so->guestfwd) {
         /* XXX this blocks entire thread. Rewrite to use
@@ -1587,7 +1588,7 @@ void slirp_socket_recv(Slirp *slirp, struct in_addr guest_addr, int guest_port,
 
 void slirp_send_packet_all(Slirp *slirp, const void *buf, size_t len)
 {
-    ssize_t ret = slirp->cb->send_packet(buf, len, slirp->opaque);
+    slirp_ssize_t ret = slirp->cb->send_packet(buf, len, slirp->opaque);
 
     if (ret < 0) {
         g_critical("Failed to send packet, ret: %ld", (long)ret);

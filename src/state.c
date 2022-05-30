@@ -26,6 +26,8 @@
 #include "vmstate.h"
 #include "stream.h"
 
+#ifdef HAVE_VMSTATE
+
 static int slirp_tcp_post_load(void *opaque, int version)
 {
     tcp_template((struct tcpcb *)opaque);
@@ -307,7 +309,7 @@ static const VMStateDescription vmstate_slirp = {
                                 VMSTATE_END_OF_LIST() }
 };
 
-void slirp_state_save(Slirp *slirp, SlirpWriteCb write_cb, void *opaque)
+int slirp_state_save(Slirp *slirp, SlirpWriteCb write_cb, void *opaque)
 {
     struct gfwd_list *ex_ptr;
     SlirpOStream f = {
@@ -330,6 +332,8 @@ void slirp_state_save(Slirp *slirp, SlirpWriteCb write_cb, void *opaque)
     slirp_ostream_write_u8(&f, 0);
 
     slirp_vmstate_save_state(&f, &vmstate_slirp, slirp);
+
+    return 0;
 }
 
 
@@ -372,6 +376,19 @@ int slirp_state_load(Slirp *slirp, int version_id, SlirpReadCb read_cb,
 
     return slirp_vmstate_load_state(&f, &vmstate_slirp, slirp, version_id);
 }
+
+#else /* HAVE_VMSTATE */
+int slirp_state_save(Slirp *slirp, SlirpWriteCb write_cb, void *opaque)
+{
+    return -ENOSYS;
+}
+
+int slirp_state_load(Slirp *slirp, int version_id, SlirpReadCb read_cb,
+                     void *opaque)
+{
+    return -ENOSYS;
+}
+#endif /* HAVE_VMSTATE */
 
 int slirp_state_version(void)
 {

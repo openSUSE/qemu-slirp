@@ -38,7 +38,7 @@
 
 static const uint8_t rfc1533_cookie[] = { RFC1533_COOKIE };
 
-#define DPRINTF(fmt, ...) DEBUG_CALL(fmt, ##__VA_ARGS__)
+#define DPRINTF(...) DEBUG_RAW_CALL(__VA_ARGS__)
 
 static BOOTPClient *get_new_addr(Slirp *slirp, struct in_addr *paddr,
                                  const uint8_t *macaddr)

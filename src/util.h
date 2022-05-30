@@ -30,10 +30,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <errno.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <inttypes.h>
 
 #ifdef _WIN32
@@ -41,15 +39,24 @@
 #include <windows.h>
 #include <ws2tcpip.h>
 #else
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
 #endif
 
+#include "libslirp.h"
+
+#ifdef __GNUC__
+#define SLIRP_PACKED_BEGIN
 #if defined(_WIN32) && (defined(__x86_64__) || defined(__i386__))
-#define SLIRP_PACKED __attribute__((gcc_struct, packed))
+#define SLIRP_PACKED_END __attribute__((gcc_struct, packed))
 #else
-#define SLIRP_PACKED __attribute__((packed))
+#define SLIRP_PACKED_END __attribute__((packed))
+#endif
+#elif defined(_MSC_VER)
+#define SLIRP_PACKED_BEGIN __pragma(pack(push, 1))
+#define SLIRP_PACKED_END __pragma(pack(pop))
 #endif
 
 #ifndef DIV_ROUND_UP
@@ -57,11 +64,8 @@
 #endif
 
 #ifndef container_of
-#define container_of(ptr, type, member)              \
-    __extension__({                                  \
-        void *__mptr = (void *)(ptr);                \
-        ((type *)(__mptr - offsetof(type, member))); \
-    })
+#define container_of(ptr, type, member) \
+        ((type *) (((char *)(ptr)) - offsetof(type, member)))
 #endif
 
 #ifndef G_SIZEOF_MEMBER
@@ -133,14 +137,14 @@ int slirp_getpeername_wrap(int fd, struct sockaddr *addr, int *addrlen);
 #define getsockname slirp_getsockname_wrap
 int slirp_getsockname_wrap(int fd, struct sockaddr *addr, int *addrlen);
 #define send slirp_send_wrap
-ssize_t slirp_send_wrap(int fd, const void *buf, size_t len, int flags);
+slirp_ssize_t slirp_send_wrap(int fd, const void *buf, size_t len, int flags);
 #define sendto slirp_sendto_wrap
-ssize_t slirp_sendto_wrap(int fd, const void *buf, size_t len, int flags,
+slirp_ssize_t slirp_sendto_wrap(int fd, const void *buf, size_t len, int flags,
                           const struct sockaddr *dest_addr, int addrlen);
 #define recv slirp_recv_wrap
-ssize_t slirp_recv_wrap(int fd, void *buf, size_t len, int flags);
+slirp_ssize_t slirp_recv_wrap(int fd, void *buf, size_t len, int flags);
 #define recvfrom slirp_recvfrom_wrap
-ssize_t slirp_recvfrom_wrap(int fd, void *buf, size_t len, int flags,
+slirp_ssize_t slirp_recvfrom_wrap(int fd, void *buf, size_t len, int flags,
                             struct sockaddr *src_addr, int *addrlen);
 #define closesocket slirp_closesocket_wrap
 int slirp_closesocket_wrap(int fd);
