@@ -1077,9 +1077,9 @@ static void arp_input(Slirp *slirp, const uint8_t *pkt, int pkt_len)
 {
     const struct slirp_arphdr *ah =
         (const struct slirp_arphdr *)(pkt + ETH_HLEN);
-    uint8_t arp_reply[MAX(ETH_HLEN + sizeof(struct slirp_arphdr), 64)];
-    struct ethhdr *reh = (struct ethhdr *)arp_reply;
-    struct slirp_arphdr *rah = (struct slirp_arphdr *)(arp_reply + ETH_HLEN);
+    uint8_t arp_reply[MAX(2 + ETH_HLEN + sizeof(struct slirp_arphdr), 2 + 64)];
+    struct ethhdr *reh = (struct ethhdr *)(arp_reply + 2);
+    struct slirp_arphdr *rah = (struct slirp_arphdr *)(arp_reply + 2 + ETH_HLEN);
     int ar_op;
     struct gfwd_list *ex_ptr;
 
@@ -1132,7 +1132,7 @@ static void arp_input(Slirp *slirp, const uint8_t *pkt, int pkt_len)
             rah->ar_sip = ah->ar_tip;
             memcpy(rah->ar_tha, ah->ar_sha, ETH_ALEN);
             rah->ar_tip = ah->ar_sip;
-            slirp_send_packet_all(slirp, arp_reply, sizeof(arp_reply));
+            slirp_send_packet_all(slirp, arp_reply + 2, sizeof(arp_reply) - 2);
         }
         break;
     case ARPOP_REPLY:
@@ -1161,8 +1161,8 @@ void slirp_input(Slirp *slirp, const uint8_t *pkt, int pkt_len)
         m = m_get(slirp);
         if (!m)
             return;
-        /* Note: we add 2 to align the IP header on 4 bytes,
-         * and add the margin for the tcpiphdr overhead  */
+        /* Note: we add 2 to align the IP header on 8 bytes despite the ethernet
+         * header, and add the margin for the tcpiphdr overhead  */
         if (M_FREEROOM(m) < pkt_len + TCPIPHDR_DELTA + 2) {
             m_inc(m, pkt_len + TCPIPHDR_DELTA + 2);
         }
@@ -1198,9 +1198,9 @@ static int if_encap4(Slirp *slirp, struct mbuf *ifm, struct ethhdr *eh,
     const struct ip *iph = (const struct ip *)ifm->m_data;
 
     if (!arp_table_search(slirp, iph->ip_dst.s_addr, ethaddr)) {
-        uint8_t arp_req[ETH_HLEN + sizeof(struct slirp_arphdr)];
-        struct ethhdr *reh = (struct ethhdr *)arp_req;
-        struct slirp_arphdr *rah = (struct slirp_arphdr *)(arp_req + ETH_HLEN);
+        uint8_t arp_req[2 + ETH_HLEN + sizeof(struct slirp_arphdr)];
+        struct ethhdr *reh = (struct ethhdr *)(arp_req + 2);
+        struct slirp_arphdr *rah = (struct slirp_arphdr *)(arp_req + 2 + ETH_HLEN);
 
         if (!ifm->resolution_requested) {
             /* If the client addr is not known, send an ARP request */
@@ -1227,7 +1227,7 @@ static int if_encap4(Slirp *slirp, struct mbuf *ifm, struct ethhdr *eh,
             /* target IP */
             rah->ar_tip = iph->ip_dst.s_addr;
             slirp->client_ipaddr = iph->ip_dst;
-            slirp_send_packet_all(slirp, arp_req, sizeof(arp_req));
+            slirp_send_packet_all(slirp, arp_req + 2, sizeof(arp_req) - 2);
             ifm->resolution_requested = true;
 
             /* Expire request and drop outgoing packet after 1 second */
@@ -1277,13 +1277,13 @@ static int if_encap6(Slirp *slirp, struct mbuf *ifm, struct ethhdr *eh,
 int if_encap(Slirp *slirp, struct mbuf *ifm)
 {
     uint8_t buf[IF_MTU_MAX + 100];
-    struct ethhdr *eh = (struct ethhdr *)buf;
+    struct ethhdr *eh = (struct ethhdr *)(buf + 2);
     uint8_t ethaddr[ETH_ALEN];
     const struct ip *iph = (const struct ip *)ifm->m_data;
     int ret;
     char ethaddr_str[ETH_ADDRSTRLEN];
 
-    if (ifm->m_len + ETH_HLEN > sizeof(buf)) {
+    if (ifm->m_len + ETH_HLEN > sizeof(buf) - 2) {
         return 1;
     }
 
@@ -1311,8 +1311,8 @@ int if_encap(Slirp *slirp, struct mbuf *ifm)
                                            sizeof(ethaddr_str)));
     DEBUG_ARG("dst = %s", slirp_ether_ntoa(eh->h_dest, ethaddr_str,
                                            sizeof(ethaddr_str)));
-    memcpy(buf + sizeof(struct ethhdr), ifm->m_data, ifm->m_len);
-    slirp_send_packet_all(slirp, buf, ifm->m_len + ETH_HLEN);
+    memcpy(buf + 2 + sizeof(struct ethhdr), ifm->m_data, ifm->m_len);
+    slirp_send_packet_all(slirp, buf + 2, ifm->m_len + ETH_HLEN);
     return 1;
 }
 

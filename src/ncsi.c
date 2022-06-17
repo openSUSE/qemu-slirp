@@ -268,10 +268,10 @@ void ncsi_input(Slirp *slirp, const uint8_t *pkt, int pkt_len)
 {
     const struct ncsi_pkt_hdr *nh =
         (const struct ncsi_pkt_hdr *)(pkt + ETH_HLEN);
-    uint8_t ncsi_reply[ETH_HLEN + NCSI_MAX_LEN];
-    struct ethhdr *reh = (struct ethhdr *)ncsi_reply;
+    uint8_t ncsi_reply[2 + ETH_HLEN + NCSI_MAX_LEN];
+    struct ethhdr *reh = (struct ethhdr *)(ncsi_reply + 2);
     struct ncsi_rsp_pkt_hdr *rnh =
-        (struct ncsi_rsp_pkt_hdr *)(ncsi_reply + ETH_HLEN);
+        (struct ncsi_rsp_pkt_hdr *)(ncsi_reply + 2 + ETH_HLEN);
     const struct ncsi_rsp_handler *handler = NULL;
     int i;
     int ncsi_rsp_len = sizeof(*nh);
@@ -322,5 +322,5 @@ void ncsi_input(Slirp *slirp, const uint8_t *pkt, int pkt_len)
     *pchecksum = htonl(checksum);
     ncsi_rsp_len += 4;
 
-    slirp_send_packet_all(slirp, ncsi_reply, ETH_HLEN + ncsi_rsp_len);
+    slirp_send_packet_all(slirp, ncsi_reply + 2, ETH_HLEN + ncsi_rsp_len);
 }
