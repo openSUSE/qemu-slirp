@@ -89,8 +89,8 @@ struct tcpiphdr {
  * size of actual ip+tcp headers, rounded up since we need to align data.  */
 #define TCPIPHDR_DELTA                                     \
     (MAX(0, ((int) sizeof(struct tcpiphdr) - (int) sizeof(struct ip) - \
-             (int) sizeof(struct tcphdr) + 3) &                  \
-                ~3))
+             (int) sizeof(struct tcphdr) + 7) &                  \
+                ~7))
 
 /*
  * Just a clean way to get to the first byte
