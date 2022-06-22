@@ -259,7 +259,7 @@ const VMStateInfo slirp_vmstate_info_buffer = {
     .put = put_buffer,
 };
 
-static int vmstate_n_elems(void *opaque, const VMStateField *field)
+static int vmstate_n_elems(char *opaque, const VMStateField *field)
 {
     int n_elems = 1;
 
@@ -282,7 +282,7 @@ static int vmstate_n_elems(void *opaque, const VMStateField *field)
     return n_elems;
 }
 
-static int vmstate_size(void *opaque, const VMStateField *field)
+static int vmstate_size(char *opaque, const VMStateField *field)
 {
     int size = field->size;
 
@@ -297,7 +297,7 @@ static int vmstate_size(void *opaque, const VMStateField *field)
 }
 
 static int vmstate_save_state_v(SlirpOStream *f, const VMStateDescription *vmsd,
-                                void *opaque, int version_id)
+                                char *opaque, int version_id)
 {
     int ret = 0;
     const VMStateField *field = vmsd->fields;
@@ -313,7 +313,7 @@ static int vmstate_save_state_v(SlirpOStream *f, const VMStateDescription *vmsd,
     while (field->name) {
         if ((field->field_exists && field->field_exists(opaque, version_id)) ||
             (!field->field_exists && field->version_id <= version_id)) {
-            void *first_elem = opaque + field->offset;
+            char *first_elem = opaque + field->offset;
             int i, n_elems = vmstate_n_elems(opaque, field);
             int size = vmstate_size(opaque, field);
 
@@ -378,10 +378,11 @@ static void vmstate_handle_alloc(void *ptr, VMStateField *field, void *opaque)
 }
 
 int slirp_vmstate_load_state(SlirpIStream *f, const VMStateDescription *vmsd,
-                             void *opaque, int version_id)
+                             void *opaque_, int version_id)
 {
     VMStateField *field = vmsd->fields;
     int ret = 0;
+    char *opaque = opaque_;
 
     if (version_id > vmsd->version_id) {
         g_warning("%s: incoming version_id %d is too new "
@@ -398,7 +399,7 @@ int slirp_vmstate_load_state(SlirpIStream *f, const VMStateDescription *vmsd,
     while (field->name) {
         if ((field->field_exists && field->field_exists(opaque, version_id)) ||
             (!field->field_exists && field->version_id <= version_id)) {
-            void *first_elem = opaque + field->offset;
+            char *first_elem = opaque + field->offset;
             int i, n_elems = vmstate_n_elems(opaque, field);
             int size = vmstate_size(opaque, field);
 
