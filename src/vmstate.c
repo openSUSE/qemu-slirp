@@ -45,8 +45,6 @@
 #include "stream.h"
 #include "vmstate.h"
 
-#ifdef HAVE_VMSTATE
-
 static int get_nullptr(SlirpIStream *f, void *pv, size_t size,
                        const VMStateField *field)
 {
@@ -445,5 +443,3 @@ int slirp_vmstate_load_state(SlirpIStream *f, const VMStateDescription *vmsd,
     }
     return ret;
 }
-
-#endif /* HAVE_VMSTATE */
