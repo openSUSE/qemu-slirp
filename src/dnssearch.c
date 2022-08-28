@@ -263,13 +263,13 @@ int translate_dnssearch(Slirp *s, const char **names)
     for (i = 0; i < num_domains; i++) {
         domains[i].labels = outptr;
         domain_mklabels(domains + i, names[i]);
+        if (domains[i].len == 0) {
+            /* Bogus entry, reject it all */
+            g_free(domains);
+            g_free(result);
+            return -1;
+        }
         outptr += domains[i].len;
-    }
-
-    if (outptr == result) {
-        g_free(domains);
-        g_free(result);
-        return -1;
     }
 
     qsort(domains, num_domains, sizeof(*domains), domain_suffix_ord);
