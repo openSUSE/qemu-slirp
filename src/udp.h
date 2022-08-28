@@ -37,7 +37,6 @@
 #include "socket.h"
 
 #define UDP_TTL 0x60
-#define UDP_UDPDATALEN 16192
 
 /*
  * Udp protocol header.
